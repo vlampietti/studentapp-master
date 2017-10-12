@@ -1,0 +1,139 @@
+body {
+  /* Old browsers */
+  background: #EEE;
+  /* Chrome 10-25, Safari 5.1-6 */
+  /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+  background: #ecf0f1;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar-brand {
+  font-family: Avenir;
+  font-size: 20px;
+  text-align: right;
+}
+
+h2 {
+  font-family: Avenir;
+  font-size: 45px;
+  font-weight: lighter;
+}
+
+h3, p {
+  font-family: Avenir;
+  color: #696969;
+  font-weight: lighter; 
+}
+
+
+/* Navigation */
+
+.navigation {
+  box-sizing: border-box;
+  background-color: #EEE;
+  overflow: auto;
+  padding: 18px 50px;
+  position: relative;
+  top: 0;
+  width: 100%;
+  z-index: 999;
+}
+
+
+ul {
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  color: #FFF;
+  display: inline-block;
+  font-family: 'Avenir', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  margin: 0;
+  padding: 30px 10px 0px 20px;
+}
+
+.active {
+  color: #88CCF1;
+}
+
+
+/* line 20, ../sass/pizza.scss */
+[data-pie-id] li:nth-child(0) {
+  color: blue;
+}
+
+/* line 20, ../sass/pizza.scss */
+[data-pie-id] li:nth-child(1) {
+  color: #1A237E;
+}
+
+/* line 20, ../sass/pizza.scss */
+[data-pie-id] li:nth-child(2) {
+  color: #7986CB;
+}
+
+/* line 20, ../sass/pizza.scss */
+[data-pie-id] li:nth-child(3) {
+  color: #607D8B;
+}
+
+/* line 20, ../sass/pizza.scss */
+[data-pie-id] li:nth-child(4) {
+  color: #ff00cc;
+}
+
+/* line 20, ../sass/pizza.scss */
+[data-pie-id] li:nth-child(5) {
+  color: #ff0080;
+}
+
+/* line 20, ../sass/pizza.scss */
+[data-pie-id] li:nth-child(6) {
+  color: #ff0033;
+}
+
+/* line 26, ../sass/pizza.scss */
+ul[data-pie-id] {
+  list-style: none;
+  padding: 25px;
+}
+
+
+[data-pie-id='my-cool-chart'] li:nth-child(0) {
+  color: #d84200;
+}
+
+/* line 20, ../sass/pizza.scss */
+[data-pie-id='my-cool-chart'] li:nth-child(1) {
+  color: #1abc9c;
+}
+
+/* line 20, ../sass/pizza.scss */
+[data-pie-id='my-cool-chart'] li:nth-child(2) {
+  color: #34495e;
+}
+
+/* line 20, ../sass/pizza.scss */
+[data-pie-id='my-cool-chart'] li:nth-child(3) {
+  color: #95a5a6;
+}
+
+/* line 20, ../sass/pizza.scss */
+[data-pie-id='my-cool-chart'] li:nth-child(4) {
+  color: #FFF;
+}
+
+/* line 20, ../sass/pizza.scss */
+[data-pie-id='my-cool-chart'] li:nth-child(5) {
+  color: #FFF;
+}
+
+/* line 20, ../sass/pizza.scss */
+[data-pie-id='my-cool-chart'] li:nth-child(6) {
+  color: #FFF;
+}
