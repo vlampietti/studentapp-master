@@ -1,6 +1,6 @@
-("span1").remove();
+document.getElementById("span1").style.visibility = "hidden";
 
-;(function ($, window, document, undefined) {
+(function ($, window, document, undefined) {
   'use strict';
 
   var Pizza = {
