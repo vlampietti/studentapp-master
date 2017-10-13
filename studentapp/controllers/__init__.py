@@ -1,5 +1,6 @@
 from flask import render_template, flash, redirect, session, url_for, request, g, json, jsonify, send_from_directory
 from studentapp import app
+from lookup_functions import lookup_days_active
 import numpy as np
 import csv
 
@@ -54,10 +55,17 @@ def index():
 # route for handling the login page logic
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    print "Here in login"
     error = None
     if request.method == 'POST':
-        if request.form['username'] != 'admin' or request.form['password'] != 'admin':
-            error = 'Invalid Credentials. Please try again.'
-        else:
+        uid = int(request.form['username'])
+        if uid >= 534220 and uid <= 534964:
+            [num1, num2] = lookup_days_active(uid)
+            print num1, num2
+            session['uid'] = uid
+            session['num1'] = num1
+            session['num2'] = num2
             return redirect(url_for('home'))
+        else:
+            error = 'Invalid Credentials. Please try again.'
     return render_template("login.html", error=error)

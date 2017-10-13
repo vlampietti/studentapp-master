@@ -1,4 +1,4 @@
-document.getElementById('span1').innerHTML='x';
+("span1").remove();
 
 ;(function ($, window, document, undefined) {
   'use strict';
