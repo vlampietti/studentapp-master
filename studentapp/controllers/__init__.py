@@ -2,7 +2,6 @@ from flask import render_template, flash, redirect, session, url_for, request, g
 from studentapp import app
 import numpy as np
 import csv
-import StringIO
 
 
 GOOGLE_APPLICATION_CREDENTIALS = './my-first-project-00521592dba3.json'
@@ -51,3 +50,14 @@ def internal_error(error):
 @app.route('/index', methods=['GET', 'POST'])
 def index():
     return render_template("index.html")
+
+# route for handling the login page logic
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        if request.form['username'] != 'admin' or request.form['password'] != 'admin':
+            error = 'Invalid Credentials. Please try again.'
+        else:
+            return redirect(url_for('home'))
+    return render_template("login.html", error=error)

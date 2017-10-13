@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+{% extends "base.html" %}
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css?family=Lato: 100,300,400,700|Luckiest+Guy|Oxygen:300,400" rel="stylesheet">
+<link href="style.css" type="text/css" rel="stylesheet">
+
+      <h2>edX data</h2>
+      <h3 class="h3-login">Please login:</h1>
+
+<script type="text/javascript" src="//cdn.jsdelivr.net/snap.svg/0.1.0/snap.svg-min.js"></script>
+
+    <title>Login</title>
+
+  <body>
+    <div class="container">
+   
+      <form action="" method="post">
+        <input type="text" placeholder="Username" name="username" value="{{
+          request.form.username }}">
+        <input class="btn btn-default" type="submit" value="Login">
+      </form>
+      {% if error %}
+        <p class="error"><strong>Error:</strong> {{ error }}
+      {% endif %}
+      <script type ="text/javascript" src ="/static/js/pie.js"></script>
+    </div>
+
+  </body>
+
+
+{% endblock %}

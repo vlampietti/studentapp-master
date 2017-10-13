@@ -11,7 +11,12 @@ body {
 .navbar-brand {
   font-family: Avenir;
   font-size: 20px;
+  text-align: left;
+}
+
+.h3-login {
   text-align: right;
+
 }
 
 h2 {
@@ -25,6 +30,7 @@ h3, p {
   color: #696969;
   font-weight: lighter; 
 }
+
 
 
 /* Navigation */
