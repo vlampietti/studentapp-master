@@ -1,60 +1,107 @@
-<!DOCTYPE HTML>
+<!DOCTYPE HTML><html lang="en">
 {% extends "base.html" %}
 {% set active_page = "menu1" %}
 {% block content %}
-<link href="https://fonts.googleapis.com/css?family=Lato: 100,300,400,700|Luckiest+Guy|Oxygen:300,400" rel="stylesheet">
+
+  <link href="circle.css" type="text/css" rel="stylesheet">
   <link href="style.css" type="text/css" rel="stylesheet">
 
+  <h2>MITx Course 8.02</h2>
+  <h3>Welcome user <span style="color:#2980b9;">{{ session['uname'] }}</span> to your personalized dashboard.</h3
+  
 
-<h2>edX data</h2>
+  <p>You have been active for </span><b>{{ session['num1'] }}</b> days. Keep up the good work!</p>
 
-<h3>Welcome to your personalized dashboard.</h3
 
-<p> 
-You have been active for <span id="span1" style="display:none;"></span>{{ session['num2'] }} days. Keep up the good work!</p>
 
-<script type="text/javascript" src="//cdn.jsdelivr.net/snap.svg/0.1.0/snap.svg-min.js"></script>
-
-<div class="container">
-	<div class="row">
-        <div class="col-md-12">
-        </div>
-	</div>
+<body>
+  <div class="container">
     <div class="row">
-        <div class="col-md-3">
-          <ul data-pie-id="svg">
-            <li data-value="6">Videos</li>
-            <li data-value="20">Practice Problems</li>
-            <li data-value="100">Problem Sets</li>
-          </ul>
+      <div class="col-xs-6 col-sm-3">
+        <h4>Your Progress</h4>
+        <br>
+        <div class="c100 p{{ session['num1'] }} center green dark">
+          <span>{{ session['num1'] }}%</span>
+          <div class="slice">
+            <div class="bar"></div>
+            <div class="fill"></div>
+          </div>
         </div>
-        <div class="col-md-3">
-          <div id="svg"></div>
-        </div>
-        <div class="col-md-3">
-          <ul data-pie-id="my-cool-chart">
-              <li data-value="36">Videos</li>
-              <li data-value="24">Practice Problems</li>
-              <li data-value="8">Problem Sets</li>
-            </ul>
-            </div>
-        <div class="col-md-3">
-            <div id="my-cool-chart"></div>
-        </div>
+        <br>
+      <p>Your progress is determined by the number of problems you have completed successfully over the total number of problems in the course.</p>
+      </div>
+      <div class="col-xs-6 col-sm-3">
+        <h4>Second Column</h4>
+
+          <br>
+          <p> Right now this is a blank space but eventually it will hold a forum link. To be determined if we can also get the number of forum posts of each person.</p>
+          <input class="btn btn-default" type="submit" value="Go to Forum">
+        
+      </div>
+
+  <!-- Add the extra clearfix for only the required viewport -->
+      <div class="clearfix visible-xs-block"></div>
+
+      <div class="col-xs-6 col-sm-3">
+
+<meta charset="utf-8" />   <title>Chart.js </title>   
+
+<h4>You vs. Model Student</h4>   
+
+<!-- import plugin script --><script src='static/Chart.min.js'></script>
+<!-- bar chart canvas element --><canvas id="chart" width="225" height="275"></canvas>
+
+<script>
+   // bar chart data
+   var barData = {
+   labels : [{% for item in labels %}
+                  "{{item}}",
+              {% endfor %}],
+   datasets : [
+      {
+            fillColor: "rgba(151,187,205,0.2)",
+            strokeColor: "rgba(151,187,205,1)",
+            pointColor: "rgba(151,187,205,1)",
+         data : [{% for item in values %}
+                      {{item}},
+                    {% endfor %}]
+      }
+      ]
+   }
+ 
+   // get bar chart canvas
+   var mychart = document.getElementById("chart").getContext("2d");
+ 
+   steps = 5
+   max = 100
+   // draw bar chart
+   new Chart(mychart).Bar(barData, {
+        scaleOverride: true,
+        scaleSteps: steps,
+        scaleStepWidth: Math.ceil(max / steps),
+        scaleStartValue: 0,
+        scaleShowVerticalLines: true,
+        scaleShowGridLines : false,
+        barShowStroke : true,
+        scaleShowLabels: true
+   });
+ 
+</script>
+
+      </div>
+      <div class="col-xs-6 col-sm-3">
+        <h4>Learning Science Tip</h4>
+        <br>
+<p>Did you know that...</p>
+      </div>
     </div>
 </div>
 
-<br>
-<br>
-<br>
-    
-<p>
-	<a href="https://openlearning.mit.edu/campus/resources-and-references" target="_blank">Click here</a> for resources on how to study smarter!</p>
+
+<p><a href="https://openlearning.mit.edu/campus/resources-and-references" target="_blank" style="color:#16a085;">Click here</a> for resources on how to study smarter!</p>
+
+
+
 </div>
-<script type ="text/javascript" src ="/static/js/pie.js"></script>
-<script>
-    
-
-</script>
-
+</body>
 {% endblock %}
