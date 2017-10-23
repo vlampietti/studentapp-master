@@ -74,6 +74,8 @@ def login():
             session['num2'] = num2
             return redirect(url_for('index'))
             return uid
+        elif uid == 'admin':
+            return redirect(url_for('login'))
         else:
             error = 'Invalid Credentials. Please try again.'
     return render_template("login.html", error=error)
