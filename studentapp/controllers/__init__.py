@@ -11,28 +11,20 @@ import csv
 #load these credentials before opening the app
 GOOGLE_APPLICATION_CREDENTIALS = './my-first-project-00521592dba3.json'
 
-def query_shakespeare(uid,uname):
+def query_ophelia(uid):
     import uuid
     from google.cloud import bigquery
     client = bigquery.Client()
-    print "in query_shakespeare"
-    print uid, uname
+    print "in query_ophelia"
+    print uid
     
     query = """
         #standardSQL
         SELECT
-            user_id, username, ndays_act, nvideos_total_watched
+            user_id, username, ndays_act, nvideos_total_watched, nforum_posts, sum_dt
         FROM `deidentified_data.person_course`
         WHERE user_id = @uid
-        UNION ALL
-        SELECT
-            nprogcheck, username, nvideo, nproblems_attempted
-        FROM `deidentified_data.person_course_day`
-        WHERE username = @uname;
         """
-
-#if there is a forum linked to edX we will want to pull nforum_posts from `person_course`
-
     query_job = client.run_async_query(
         str(uuid.uuid4()),
         query,
@@ -46,10 +38,43 @@ def query_shakespeare(uid,uname):
 
     destination_table = query_job.destination
     destination_table.reload()
-    f = open("data-placeholder.csv", "w+")
+    f = open("ophelia.csv", "w+")
     for row in destination_table.fetch_data():
-        f.write(str(row[0])+","+str(row[1])+","+str(row[2])+","+str(row[3])+"\n")
+        f.write(str(row[0])+","+str(row[1])+","+str(row[2])+","+str(row[3])+","+str(row[4])+","+str(row[5])+"\n")
     f.close()
+
+def query_hamlet(uname):
+    import uuid
+    from google.cloud import bigquery
+    ham_client = bigquery.Client()
+    print "in hamlet"
+    print uname
+    
+    query = """
+        #standardSQL
+        SELECT
+            nprogcheck, username, nvideo, nproblems_attempted
+        FROM `deidentified_data.person_course_day`
+        WHERE username = @uname;
+        """
+
+    query_job = ham_client.run_async_query(
+        str(uuid.uuid4()),
+        query,
+        query_parameters=(
+            bigquery.ScalarQueryParameter('uid', 'INT64', uid),
+            bigquery.ScalarQueryParameter(
+                'uname', 'STRING', uname)))
+    query_job.use_legacy_sql = False
+    query_job.begin()
+    query_job.result()
+
+    destination_table2 = query_job.destination
+    destination_table2.reload()
+    h = open("hamlet.csv", "w+")
+    for row in destination_table2.fetch_data():
+        h.write(str(row[0])+","+str(row[1])+","+str(row[2])+","+str(row[3])+"\n")
+    h.close()
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
@@ -61,10 +86,18 @@ def login():
         global uname
         global num1
         global num2
-        uid = int(request.form['username'])
+        uid = request.form['username']
+
+#admin uid redirects to login page 
+        if str(uid) == 'admin':
+            print uid
+            return redirect(url_for('adminlogin'))
+
+        uid = int(uid)
         [uid, uname] = match_uid_to_uname(uid)
         print uid, uname
-        query_shakespeare(uid,uname)
+        query_ophelia(uid)
+        query_hamlet(uname)
         if uid >= 534220 and uid <= 534964:
             [uid, uname, num1, num2] = lookup_days_active(uid)
             print uid, uname, num1, num2
@@ -74,8 +107,6 @@ def login():
             session['num2'] = num2
             return redirect(url_for('index'))
             return uid
-        elif uid == 'admin':
-            return redirect(url_for('login'))
         else:
             error = 'Invalid Credentials. Please try again.'
     return render_template("login.html", error=error)
@@ -95,3 +126,34 @@ def index():
     labels = ["Videos","","Problems",""]
     values = [32,67,71,num1]
     return render_template("index.html", values=values, labels=labels)
+
+
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/adminlogin', methods=['GET', 'POST'])
+def adminlogin():
+    print "Here in admin login"
+    error = None
+    if request.method == 'POST':
+        global uid
+        global uname
+        global num1
+        global num2
+        uid = request.form['username']
+        uid = int(uid)
+        [uid, uname] = match_uid_to_uname(uid)
+        print uid, uname
+        query_ophelia(uid,uname)
+        query_hamlet(uname)
+        if uid >= 534220 and uid <= 534964:
+            [uid, uname, num1, num2] = lookup_days_active(uid)
+            print uid, uname, num1, num2
+            session['uid'] = uid
+            session['uname'] = uname
+            session['num1'] = num1
+            session['num2'] = num2
+            return redirect(url_for('index'))
+            return uid
+        else:
+            error = 'Invalid Credentials. Please try again.'
+    return render_template("adminlogin.html", error=error)
+
