@@ -12,16 +12,14 @@
 
   <p>You have been active for </span><b>{{ session['num1'] }}</b> days. Keep up the good work!</p>
 
-
-
 <body>
   <div class="container">
     <div class="row">
       <div class="col-xs-6 col-sm-3">
         <h4>Your Progress</h4>
         <br>
-        <div class="c100 p{{ session['num1'] }} center green dark">
-          <span>{{ session['num1'] }}%</span>
+        <div class="c100 p{{ session['prog'] }} center green dark">
+          <span>{{ session['prog'] }}%</span>
           <div class="slice">
             <div class="bar"></div>
             <div class="fill"></div>
@@ -35,8 +33,17 @@
 
           <br>
           <p> Right now this is a blank space but eventually it will hold a forum link. To be determined if we can also get the number of forum posts of each person.</p>
-          <center><input class="btn btn-default" type="button" value="Go to Forum"></center>
-        
+
+          <script type="javascript/text">
+          var clicks = 45
+          function countClicks(){
+            clicks +=1
+            document.getElementById("forum_button").innerHTML = clicks;
+            }
+          </script>
+
+          <center><a onclick="javascript:countClicks();" href="https://piazza.com/" id="forum_button" class="btn btn-default" type="button">Go to Forum</a></center>
+
       </div>
 
   <!-- Add the extra clearfix for only the required viewport -->
@@ -99,6 +106,8 @@
 
 
 <p><a href="https://openlearning.mit.edu/campus/resources-and-references" target="_blank" style="color:#16a085;">Click here</a> for resources on how to study smarter!</p>
+
+   
 
 
 

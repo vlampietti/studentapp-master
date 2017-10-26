@@ -58,6 +58,86 @@ h4 {
   z-index: 999;
 }
 
+.forum-button {
+  display: inline-block;
+  padding: 6px 12px;
+  margin-bottom: 0;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 1.42857143;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  -ms-touch-action: manipulation;
+      touch-action: manipulation;
+  cursor: pointer;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  background-image: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+
+.forum-button {
+  color: #333;
+  background-color: #fff;
+  border-color: #ccc;
+}
+.forum-button:focus,
+.forum-button.focus {
+  color: #333;
+  background-color: #e6e6e6;
+  border-color: #8c8c8c;
+}
+.forum-button:hover {
+  color: #333;
+  background-color: #e6e6e6;
+  border-color: #adadad;
+}
+.forum-button:active,
+.forum-button.active,
+.open > .dropdown-toggle.forum-button {
+  color: #333;
+  background-color: #e6e6e6;
+  border-color: #adadad;
+}
+.forum-button:active:hover,
+.forum-button.active:hover,
+.open > .dropdown-toggle.forum-button:hover,
+.forum-button:active:focus,
+.forum-button.active:focus,
+.open > .dropdown-toggle.forum-button:focus,
+.forum-button:active.focus,
+.forum-button.active.focus,
+.open > .dropdown-toggle.forum-button.focus {
+  color: #333;
+  background-color: #d4d4d4;
+  border-color: #8c8c8c;
+}
+.forum-button:active,
+.forum-button.active,
+.open > .dropdown-toggle.forum-button {
+  background-image: none;
+}
+.forum-button.disabled:hover,
+.forum-button[disabled]:hover,
+fieldset[disabled] .forum-button:hover,
+.forum-button.disabled:focus,
+.forum-button[disabled]:focus,
+fieldset[disabled] .forum-button:focus,
+.forum-button.disabled.focus,
+.forum-button[disabled].focus,
+fieldset[disabled] .forum-button.focus {
+  background-color: #fff;
+  border-color: #ccc;
+}
+.forum-button .badge {
+  color: #fff;
+  background-color: #333;
+}
+
 
 
 

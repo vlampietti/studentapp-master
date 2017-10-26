@@ -16,7 +16,6 @@ def match_uid_to_uname(uid):
 def lookup_days_active(uid):
     num1 = 0
     num2 = 0
-    problems_attempted = 0
     with open("ophelia.csv","rb") as csvfile:
     	csvreader = csv.reader(csvfile, delimiter=",")
     	for row in csvreader:
@@ -28,6 +27,23 @@ def lookup_days_active(uid):
 
     print "in lookup_days_active"
     return(uid,uname,num1,num2)
+
+def determine_progress(uname):
+    prog = 0
+    with open("hamlet.csv","rb") as csvfile:
+        csvreader = csv.reader(csvfile, delimiter=",")
+        for row in csvreader:
+            prog = int(row[3])
+
+# note that the assumption here is that there are 100 problems in the course:
+# sthis can be changed once we have access to actual numbers.
+
+    print "in determine_progress"
+    return uname, prog
+
+
+
+
 
 if __name__ == '__main__':
     uid = raw_input("please provide a user id: ")
