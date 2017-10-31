@@ -1,18 +1,16 @@
 from flask import Flask
 from flask import Markup
-from flask import Flask
 from flask import render_template, flash, redirect, session, url_for, request, g, json, jsonify, send_from_directory
 from studentapp import app, db
-from studentapp.models import UserLogin
-from celery import Celery
+from studentapp.models import UserLogin, ButtonClicks
 from lookup_functions import lookup_days_active, match_uid_to_uname, determine_progress
 import numpy as np
 import csv
 import json
 from datetime import datetime
-import os
+import webbrowser
 
-#GOOGLE_APPLICATION_CREDENTIALS = './my-first-project-00521592dba3.json'
+GOOGLE_APPLICATION_CREDENTIALS = './my-first-project-00521592dba3.json'
 
 def query_ophelia(uid):
     import uuid
@@ -103,9 +101,10 @@ def login():
         print uid, uname
         query_ophelia(uid)
         query_hamlet(uname)
-        if uid >= 534220 and uid <= 534964:
+        if uid >= 534220 and uid <= 534964 and uid%2 == 0:
             [uid, uname, num1, num2] = lookup_days_active(uid)
             [uname, prog] = determine_progress(uname)
+            uname = uname[1:]
             print uid, uname, num1, num2, prog
             session['uid'] = uid
             session['uname'] = uname
@@ -114,6 +113,17 @@ def login():
             session['prog'] = prog
             return redirect(url_for('index'))
             return uid
+        elif uid >= 534220 and uid <= 534964 and uid%2 != 0:
+            [uid, uname, num1, num2] = lookup_days_active(uid)
+            [uname, prog] = determine_progress(uname)
+            uname = uname[1:]
+            print uid, uname, num1, num2, prog
+            session['uid'] = uid
+            session['uname'] = uname
+            session['num1'] = num1
+            session['num2'] = num2
+            session['prog'] = prog
+            return redirect(url_for('otherindex'))
         else:
             error = 'Invalid Credentials. Please try again.'
     return render_template("login.html", error=error)
@@ -128,10 +138,19 @@ def internal_error(error):
     return render_template('500.html'), 500
 
 @app.route('/', methods=['GET', 'POST'])
-@app.route('/index', methods=['GET', 'POST'])
-def index():
+@app.route('/otherindex', methods=['GET', 'POST'])
+def otherindex():
     labels = ["Videos","","Problems",""]
     values = [32,67,71,num1]
+    return render_template("otherindex.html", values=values, labels=labels)
+
+
+
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/index', methods=['GET', 'POST'])
+def index():
+    values = [prog, uname]
+
 
 #an excessive amount of work to pull 'Device' from 'User_Agent'. Looking into alternatives...
 
@@ -140,22 +159,51 @@ def index():
     devicemessy = devicetup[1]
     device = devicemessy[1:-1]
 
-    global clicks
-    clicks = 1
+    browserstr = str(request.user_agent)
+    browsertup = tuple(filter(None,devicestr.split(' ')))
+    browsermessy = browsertup[11]
+    browser = browsermessy[0:-14]
 
-    if request.method == 'POST': 
-        clicks = request.POST.get('forum_button')
-        clicks = int(clicks)
-        return clicks
-
-    userlogin = UserLogin(user_id = uid, username = uname, login_date = datetime.utcnow(), device = device, nforum_click = clicks, ip_address = str(request.remote_addr))
-    print "in userlogin"
-    print uid, uname, datetime.utcnow(), str(request.remote_addr), device, clicks
+    clicks = 0
+    
+    userlogin = UserLogin(user_id = uid, username = uname, login_date = datetime.utcnow(), ip_address = str(request.remote_addr), device = device, browser = browser)
+    print "in user login"
+    print uid, uname, datetime.utcnow(), str(request.remote_addr), device, browser, clicks
     db.session.add(userlogin)
+    db.session.commit()
+    buttonclicks = ButtonClicks(user_id = uid, username = uname, login_date = datetime.utcnow(), nforum_click = clicks)
+    print "in button clicks"
+    db.session.add(buttonclicks)
     db.session.commit()
 
     login_inst = UserLogin.query.filter_by(user_id=uid).first()
-    return render_template("index.html", values=values, labels=labels, login_inst=login_inst)
+    login_button = ButtonClicks.query.filter_by(user_id=uid).first()
+    print login_inst
+    print login_button
+    return render_template("index.html", values=values, login_inst=login_inst, login_button=login_button)
+
+
+@app.route('/forumclicks', methods=['POST'])
+def forumclicks():
+    print "in forum clicks"
+    if request.method == 'POST': 
+        print "hello"
+        results = request.form.getlist('clicks')
+        print 'hi'
+
+        print type(results[0])
+        print results[0]
+        print type(uname)
+        print uname
+        buttonclicks = ButtonClicks.query.filter_by(username=results[0].decode('utf-8')).first()
+        print buttonclicks
+        buttonclicks.nforum_click += 1
+        db.session.commit()
+        buttonclicks = ButtonClicks.query.filter_by(username=results[0].decode('utf-8')).first()
+        print buttonclicks.nforum_click
+
+    return redirect('https://piazza.com/', 301)
+
 
 
 @app.route('/', methods=['GET', 'POST'])
