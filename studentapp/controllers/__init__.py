@@ -12,12 +12,12 @@ import webbrowser
 
 GOOGLE_APPLICATION_CREDENTIALS = './my-first-project-00521592dba3.json'
 
-def query_ophelia(uid):
+def query_ophelia(uid, uname):
     import uuid
     from google.cloud import bigquery
     client = bigquery.Client()
     print "in query_ophelia"
-    print uid
+    print uid, uname
     
     query = """
         #standardSQL
@@ -44,12 +44,12 @@ def query_ophelia(uid):
         f.write(str(row[0])+","+str(row[1])+","+str(row[2])+","+str(row[3])+","+str(row[4])+","+str(row[5])+"\n")
     f.close()
 
-def query_hamlet(uname):
+def query_hamlet(uid, uname):
     import uuid
     from google.cloud import bigquery
     ham_client = bigquery.Client()
     print "in query_hamlet"
-    print uname
+    print uid, uname
     
     query = """
         #standardSQL
@@ -81,15 +81,11 @@ def query_hamlet(uname):
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    print "Here in login"
+    print "here in login"
     error = None
     if request.method == 'POST':
-        global uid
-        global uname
-        global num1
-        global num2
-        global prog
         uid = request.form['username']
+        print uid
 
 #admin uid redirects to login page 
         if str(uid) == 'admin':
@@ -99,30 +95,23 @@ def login():
         uid = int(uid)
         [uid, uname] = match_uid_to_uname(uid)
         print uid, uname
-        query_ophelia(uid)
-        query_hamlet(uname)
+        query_ophelia(uid, uname)
+        query_hamlet(uid, uname)
         if uid >= 534220 and uid <= 534964 and uid%2 == 0:
             [uid, uname, num1, num2] = lookup_days_active(uid)
             [uname, prog] = determine_progress(uname)
             uname = uname[1:]
             print uid, uname, num1, num2, prog
-            session['uid'] = uid
-            session['uname'] = uname
-            session['num1'] = num1
-            session['num2'] = num2
-            session['prog'] = prog
-            return redirect(url_for('index'))
-            return uid
+            print "we got this far"
+            values = [uid, uname, num1, num2, prog]
+            print values
+            return redirect(url_for('index', values=values))
+
         elif uid >= 534220 and uid <= 534964 and uid%2 != 0:
             [uid, uname, num1, num2] = lookup_days_active(uid)
             [uname, prog] = determine_progress(uname)
             uname = uname[1:]
             print uid, uname, num1, num2, prog
-            session['uid'] = uid
-            session['uname'] = uname
-            session['num1'] = num1
-            session['num2'] = num2
-            session['prog'] = prog
             return redirect(url_for('otherindex'))
         else:
             error = 'Invalid Credentials. Please try again.'
@@ -149,7 +138,17 @@ def otherindex():
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
 def index():
-    values = [prog, uname]
+    print "in index function"
+    values = []
+    values = request.args.getlist('values')
+    uid = values[0]
+    print uid
+    uname = values[1]
+    print uname
+    num1 = values[2]
+    num2 = values[3]
+    prog = values[4]
+    values = [uid, uname, num1, num2, prog]
 
 
 #an excessive amount of work to pull 'Device' from 'User_Agent'. Looking into alternatives...
@@ -165,7 +164,7 @@ def index():
     browser = browsermessy[0:-14]
 
     clicks = 0
-    
+
     userlogin = UserLogin(user_id = uid, username = uname, login_date = datetime.utcnow(), ip_address = str(request.remote_addr), device = device, browser = browser)
     print "in user login"
     print uid, uname, datetime.utcnow(), str(request.remote_addr), device, browser, clicks
@@ -180,21 +179,30 @@ def index():
     login_button = ButtonClicks.query.filter_by(user_id=uid).first()
     print login_inst
     print login_button
+    print values
     return render_template("index.html", values=values, login_inst=login_inst, login_button=login_button)
 
 
-@app.route('/forumclicks', methods=['POST'])
+@app.route('/forumclicks', methods=['GET', 'POST'])
 def forumclicks():
     print "in forum clicks"
+
+# this worked for index() but does not work here. why?
+
+    values = request.args.getlist('values')
+    uid = values[0]
+    print uid
     if request.method == 'POST': 
         print "hello"
         results = request.form.getlist('clicks')
         print 'hi'
-
         print type(results[0])
         print results[0]
         print type(uname)
         print uname
+
+# I know from here on down works fine if we can get the section above to work.
+
         buttonclicks = ButtonClicks.query.filter_by(username=results[0].decode('utf-8')).first()
         print buttonclicks
         buttonclicks.nforum_click += 1
@@ -203,7 +211,6 @@ def forumclicks():
         print buttonclicks.nforum_click
 
     return redirect('https://piazza.com/', 301)
-
 
 
 @app.route('/', methods=['GET', 'POST'])

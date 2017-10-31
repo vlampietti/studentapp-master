@@ -42,9 +42,6 @@ def determine_progress(uname):
     return uname, prog
 
 
-
-
-
 if __name__ == '__main__':
     uid = raw_input("please provide a user id: ")
     uid = int(uid)
