@@ -9,8 +9,12 @@ import csv
 import json
 from datetime import datetime
 import webbrowser
+from functools import wraps
 
-GOOGLE_APPLICATION_CREDENTIALS = './my-first-project-00521592dba3.json'
+
+# GOOGLE_APPLICATION_CREDENTIALS = './my-first-project-00521592dba3.json'
+
+# these are the google bigquery queries
 
 def query_ophelia(uid, uname):
     import uuid
@@ -78,6 +82,43 @@ def query_hamlet(uid, uname):
         h.write(str(row[0])+","+str(row[1])+","+str(row[2])+","+str(row[3])+"\n")
     h.close()
 
+def query_polonius(uid, uname):
+    import uuid
+    from google.cloud import bigquery
+    ham_client = bigquery.Client()
+    print "in query_polonius"
+    print uid, uname
+
+    query = """
+        #standardSQL
+        SELECT
+            user_id, problem_nid, problem_raw_score, problem_pct_score, n_attempts
+        FROM `deidentified_data.person_problem`
+        WHERE user_id = @uid
+        ORDER BY problem_nid;
+        """
+
+    query_job = ham_client.run_async_query(
+        str(uuid.uuid4()),
+        query,
+        query_parameters=(
+            bigquery.ScalarQueryParameter('uid', 'INT64', uid),
+            bigquery.ScalarQueryParameter(
+                'uname', 'STRING', uname)))
+    query_job.use_legacy_sql = False
+    query_job.begin()
+    query_job.result()
+
+    destination_table3 = query_job.destination
+    destination_table3.reload()
+    g = open("polonius.csv", "w+")
+    for row in destination_table3.fetch_data():
+        g.write(str(row[0])+","+str(row[1])+","+str(row[2])+","+str(row[3])+","+str(row[4])+"\n")
+    g.close()
+
+# end of google bigquery queries
+
+# login form
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -85,9 +126,9 @@ def login():
     error = None
     if request.method == 'POST':
         uid = request.form['username']
-        print uid
+        g.user = uid
+        print g.user
 
-#admin uid redirects to login page 
         if str(uid) == 'admin':
             print uid
             return redirect(url_for('adminlogin'))
@@ -97,6 +138,7 @@ def login():
         print uid, uname
         query_ophelia(uid, uname)
         query_hamlet(uid, uname)
+        query_polonius(uid, uname)
         if uid >= 534220 and uid <= 534964 and uid%2 == 0:
             [uid, uname, num1, num2] = lookup_days_active(uid)
             [uname, prog] = determine_progress(uname)
@@ -105,6 +147,8 @@ def login():
             print "we got this far"
             values = [uid, uname, num1, num2, prog]
             print values
+            print g.user
+            #session['logged_in'] = True
             return redirect(url_for('index', values=values))
 
         elif uid >= 534220 and uid <= 534964 and uid%2 != 0:
@@ -117,6 +161,7 @@ def login():
             error = 'Invalid Credentials. Please try again.'
     return render_template("login.html", error=error)
 
+# error pages 
 @app.errorhandler(404)
 def not_found_error(error):
     return render_template('404.html'), 404
@@ -126,32 +171,29 @@ def internal_error(error):
     db.session.rollback()
     return render_template('500.html'), 500
 
-@app.route('/', methods=['GET', 'POST'])
-@app.route('/otherindex', methods=['GET', 'POST'])
-def otherindex():
-    labels = ["Videos","","Problems",""]
-    values = [32,67,71,num1]
-    return render_template("otherindex.html", values=values, labels=labels)
+"""def login_required(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if session['logged_in'] == True:
+            return f(*args, **kwargs)
+            return redirect(url_for('index'))
+        else:
+            flash("You need to login first")
+            return redirect(url_for('login'))
+    return wrap"""
 
-
-
-@app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
+#@login_required
 def index():
     print "in index function"
-    values = []
     values = request.args.getlist('values')
     uid = values[0]
-    print uid
     uname = values[1]
-    print uname
     num1 = values[2]
     num2 = values[3]
     prog = values[4]
     values = [uid, uname, num1, num2, prog]
-
-
-#an excessive amount of work to pull 'Device' from 'User_Agent'. Looking into alternatives...
+    print values
 
     devicestr = str(request.user_agent)
     devicetup = tuple(filter(None,devicestr.split(' ')))
@@ -212,8 +254,14 @@ def forumclicks():
 
     return redirect('https://piazza.com/', 301)
 
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    flash('You were logged out')
+    return render_template("login.html")
 
-@app.route('/', methods=['GET', 'POST'])
+
+
 @app.route('/adminlogin', methods=['GET', 'POST'])
 def adminlogin():
     print "Here in admin login"

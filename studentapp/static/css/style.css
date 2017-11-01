@@ -16,6 +16,13 @@ body {
   text-align: left;
 }
 
+.navbar-item {
+  font-family: Avenir;
+  font-size: 20px;
+  text-align: right;
+
+}
+
 
 h2 {
   font-family: Avenir;
@@ -44,7 +51,6 @@ h4 {
   font-weight:lighter;
 }
 
-
 /* Navigation */
 
 .navigation {
@@ -58,7 +64,14 @@ h4 {
   z-index: 999;
 }
 
-.forum-button {
+.navbar-form {
+  font-family: Avenir;
+  text-align: right;
+  position: relative;
+
+}
+
+.forum-button, .navbar-form {
   display: inline-block;
   padding: 6px 12px;
   margin-bottom: 0;
@@ -80,7 +93,7 @@ h4 {
   border-radius: 4px;
 }
 
-.forum-button {
+.forum-button, .navbar-form {
   color: #333;
   background-color: #fff;
   border-color: #ccc;
