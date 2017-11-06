@@ -6,6 +6,27 @@
   <link href="/../static/css/circle.css" type="text/css" rel="stylesheet">
   <link href="/../static/css/style.css" type="text/css" rel="stylesheet">
 
+  <div class="dropdown">
+          <button class="btn btn-secondary-outline dropdown-toggle" type="button" data-toggle="dropdown">Monthly Dashboard Data
+          <span class="caret"></span></button>
+            <ul class="dropdown-menu dropdown-menu-right">
+              <li><a href="#">Overview</a></li>
+              <div class="dropdown-divider"></div>
+              <li><a href="#">January</a></li>
+              <li><a href="#">February</a></li>
+              <li><a href="#">March</a></li>
+              <li><a href="#">April</a></li>
+              <li><a href="#">May</a></li>
+              <li><a href="#">June</a></li>
+              <li><a href="#">July</a></li>
+              <li><a href="#">August</a></li>
+              <li><a href="#">September</a></li>
+              <li><a href="#">October</a></li>
+              <li><a href="#">November</a></li>
+              <li><a href="#">December</a></li>           
+            </ul>
+      </div>
+
   <h2>MITx Course 8.02</h2>
   <h3>Welcome user <span style="color:#2980b9;">{{ values[1] }}</span> to your personalized dashboard.</h3>
   
@@ -17,20 +38,22 @@
     <div class="col-xs-6 col-sm-4">
       <h4>Your Progress</h4>
         <br>
-      <div class="c100 p{{ values[4] }} center">
+      <div class="c100 p{{ values[4] }} bar">
         <span>{{ values[4] }}%</span>
         <div class="slice"></div>
         <div class="bar"></div>
         <div class="fill"></div>
       </div>
-        <br>
+
       <p>Your progress is determined by the number of problems you have completed successfully over the total number of problems in the course.</p>
+
     </div>
 
 
     <div class="col-xs-6 col-sm-4">
-      <h4>Learning Science Tip</h4>
-        <br>
+       <h4>Learning Science Tip</h4>
+       <br>
+ 
           <p>Did you know that socialization among students enhances motivation and completion rates?</p>
         <br>
           <p>One way to interact with your fellow students is by posting to the course's forum page.</p>
@@ -60,65 +83,43 @@
     }
     </style>
 
-    <div id="canvas-holder">
-        <center><canvas id="chart-area" width="250" height="250"></canvas></center>
-    </div>
-
-    <script>
-    var randomScalingFactor = function() {
-        return Math.round(Math.random() * 100);
-    };
-    var config = {
-        type: 'doughnut',
-        data: {
-            datasets: [{
+    <center><canvas id="doughnutChart" width="200" height="200"></canvas></center>
+        <script>
+          var ctxD = document.getElementById("doughnutChart").getContext('2d');
+var myLineChart = new Chart(ctxD, {
+    type: 'doughnut',
+    data: {
+        labels: [
+                "One Attempt",
+                "Multiple Attempts",
+                "Unattempted",
+                ],
+        datasets: [
+            {
                 data: [
-                    {{ values[2] }},
-                    {{ values[4] }},
-                    25,
+                    {{ values[5] }},
+                    {{ values[6] }},
+                    {{ values[7] }},
                 ],
-                backgroundColor: [
-                    window.chartColors.purple,
-                    window.chartColors.grey,
-                    window.chartColors.blue,
-                ],
-                label: 'Dataset 1'
-            }],
-            labels: [
-                "Problems Attempted",
-                "Problems Attempted Twice",
-                "Problems Unattempted"
-            ]
-        },
-        options: {
+                backgroundColor: ["#46BFBD", "#FDB45C", "#949FB1"],
+                hoverBackgroundColor: ["#5AD3D1", "#FFC870", "#A8B3C5"]
+            }
+        ]
+    },
+    options: {
             responsive: false,
             legend: {
-                position: 'bottom',
-            },
-            title: {
-                display: true,
-            },
-            animation: {
-                animateScale: true,
-                animateRotate: true
+                position: 'hidden',
             }
-        }
-    };
-    window.onload = function() {
-        var ctx = document.getElementById("chart-area").getContext("2d");
-        window.myDoughnut = new Chart(ctx, config);
-    };
+          }
+});
 
-    </script>
+        </script>
+
   </div>
 </div>
 
-<br>
-<br>
 
-
-<p><a href="https://openlearning.mit.edu/campus/resources-and-references" target="_blank" style="color:#16a085;">Click here</a> for resources on how to study smarter!</p>
-   
   <script
     src="https://code.jquery.com/jquery-3.2.1.min.js"
     integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
@@ -126,6 +127,102 @@
 
 
 </div>
+
+
+<div class="container">
+  <div class="row">
+
+  <div class="col-xs-6 col-sm-4">
+      
+  <canvas id="lineChart" width="350"></canvas>
+    <script>
+  var ctxL = document.getElementById("lineChart").getContext('2d');
+var myLineChart = new Chart(ctxL, {
+    type: 'line',
+    data: {
+        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        datasets: [
+            {
+                label: "Days Active",
+                fillColor: "#7986CB",
+                strokeColor: "#7986CB",
+                pointColor: "#7986CB",
+                pointStrokeColor: "#fff",
+                pointHighlightFill: "#fff",
+                pointHighlightStroke: "#7986CB",
+                data: {{ months }}
+            }
+        ]
+    },
+    options: {
+        responsive: false
+    }    
+});
+    </script>
+  </div>
+
+
+    <div class="col-xs-6 col-sm-4">
+      
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+   
+   <p><a href="https://openlearning.mit.edu/campus/resources-and-references" target="_blank" style="color:#16a085;">Click here</a> for resources on how to study smarter!</p>
+
+    </div>
+
+  <!-- Add the extra clearfix for only the required viewport -->
+    <div class="clearfix visible-xs-block"></div>
+
+    <div class="col-xs-6 col-sm-4">
+
+<canvas id="barChart"></canvas>
+        <script>
+          var ctxB = document.getElementById("barChart").getContext('2d');
+var myBarChart = new Chart(ctxB, {
+    type: 'bar',
+    data: {
+        labels: ["Attempted", "Unattempted"],
+        datasets: [{
+            label: 'Problems',
+            data: [
+                  {{ values[5]+values[6] }},
+                  {{ values[7] }},
+                  ],
+            backgroundColor: [
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+            ],
+            borderColor: [
+                'rgba(75, 192, 192, 1)',
+                'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                }
+            }]
+        }
+    }
+});
+      </script>
+
+    </div>
+
+</div>
+
+</div>
+
 
 
 {% endblock %}

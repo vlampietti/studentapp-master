@@ -3,14 +3,13 @@ from flask import Markup
 from flask import render_template, flash, redirect, session, url_for, request, g, json, jsonify, send_from_directory
 from studentapp import app, db
 from studentapp.models import UserLogin, ButtonClicks
-from lookup_functions import lookup_days_active, match_uid_to_uname, determine_progress
+from lookup_functions import lookup_days_active, match_uid_to_uname, determine_progress, problems, dates_active, monthly_problems
 import numpy as np
 import csv
 import json
 from datetime import datetime
 import webbrowser
 from functools import wraps
-
 
 # GOOGLE_APPLICATION_CREDENTIALS = './my-first-project-00521592dba3.json'
 
@@ -58,7 +57,7 @@ def query_hamlet(uid, uname):
     query = """
         #standardSQL
         SELECT
-            nprogcheck, username, nvideo, nproblems_attempted
+            nprogcheck, username, nvideo, nproblems_attempted, first_event
         FROM `deidentified_data.person_course_day`
         WHERE username = @uname
         ORDER BY nproblems_attempted;
@@ -79,7 +78,7 @@ def query_hamlet(uid, uname):
     destination_table2.reload()
     h = open("hamlet.csv", "w+")
     for row in destination_table2.fetch_data():
-        h.write(str(row[0])+","+str(row[1])+","+str(row[2])+","+str(row[3])+"\n")
+        h.write(str(row[0])+","+str(row[1])+","+str(row[2])+","+str(row[3])+","+str(row[4])+"\n")
     h.close()
 
 def query_polonius(uid, uname):
@@ -92,7 +91,7 @@ def query_polonius(uid, uname):
     query = """
         #standardSQL
         SELECT
-            user_id, problem_nid, problem_raw_score, problem_pct_score, n_attempts
+            user_id, problem_nid, problem_raw_score, problem_pct_score, n_attempts, date
         FROM `deidentified_data.person_problem`
         WHERE user_id = @uid
         ORDER BY problem_nid;
@@ -113,50 +112,32 @@ def query_polonius(uid, uname):
     destination_table3.reload()
     g = open("polonius.csv", "w+")
     for row in destination_table3.fetch_data():
-        g.write(str(row[0])+","+str(row[1])+","+str(row[2])+","+str(row[3])+","+str(row[4])+"\n")
+        g.write(str(row[0])+","+str(row[1])+","+str(row[2])+","+str(row[3])+","+str(row[4])+","+str(row[5])+"\n")
     g.close()
 
 # end of google bigquery queries
 
 # login form
-@app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     print "here in login"
     error = None
     if request.method == 'POST':
         uid = request.form['username']
-        g.user = uid
-        print g.user
-
         if str(uid) == 'admin':
             print uid
             return redirect(url_for('adminlogin'))
 
         uid = int(uid)
-        [uid, uname] = match_uid_to_uname(uid)
-        print uid, uname
-        query_ophelia(uid, uname)
-        query_hamlet(uid, uname)
-        query_polonius(uid, uname)
-        if uid >= 534220 and uid <= 534964 and uid%2 == 0:
-            [uid, uname, num1, num2] = lookup_days_active(uid)
-            [uname, prog] = determine_progress(uname)
-            uname = uname[1:]
-            print uid, uname, num1, num2, prog
-            print "we got this far"
-            values = [uid, uname, num1, num2, prog]
-            print values
-            print g.user
-            #session['logged_in'] = True
-            return redirect(url_for('index', values=values))
 
+        if uid >= 534220 and uid <= 534964 and uid%2 == 0:
+            session['logged_in'] = True
+            session['uid'] = uid
+            return redirect(url_for('index', uid=uid))
         elif uid >= 534220 and uid <= 534964 and uid%2 != 0:
-            [uid, uname, num1, num2] = lookup_days_active(uid)
-            [uname, prog] = determine_progress(uname)
-            uname = uname[1:]
-            print uid, uname, num1, num2, prog
-            return redirect(url_for('otherindex'))
+            session['logged_in'] = True
+            session['uid'] = uid
+            return redirect(url_for('otherindex', uid=uid))
         else:
             error = 'Invalid Credentials. Please try again.'
     return render_template("login.html", error=error)
@@ -171,7 +152,8 @@ def internal_error(error):
     db.session.rollback()
     return render_template('500.html'), 500
 
-"""def login_required(f):
+# login required function
+def login_required(f):
     @wraps(f)
     def wrap(*args, **kwargs):
         if session['logged_in'] == True:
@@ -180,20 +162,38 @@ def internal_error(error):
         else:
             flash("You need to login first")
             return redirect(url_for('login'))
-    return wrap"""
+    return wrap
 
+
+# index function
+@app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
-#@login_required
+@login_required
 def index():
     print "in index function"
-    values = request.args.getlist('values')
-    uid = values[0]
-    uname = values[1]
-    num1 = values[2]
-    num2 = values[3]
-    prog = values[4]
-    values = [uid, uname, num1, num2, prog]
+    uid = session['uid']
+    print uid
+    uid = int(uid)
+    [uid, uname] = match_uid_to_uname(uid)
+    print uid, uname
+    query_ophelia(uid, uname)
+    query_hamlet(uid, uname)
+    query_polonius(uid, uname)
+
+    [uid, uname, num1, num2] = lookup_days_active(uid)
+    [uname, prog] = determine_progress(uname)
+    [uid, one_attempt, multiple_attempts, not_completed] = problems(uid)
+    [uname, jan, feb, mar, apr, may, jun, jul, aug, sep, october, nov, dec] = dates_active(uname)
+    [uid, mon] = monthly_problems(uid)
+    uname = uname[1:]
+    print uid, uname, num1, num2, prog, one_attempt, multiple_attempts, not_completed
+    print "months!"
+    print jan, feb, mar, apr, may, jun, jul, aug, sep, october, nov, dec
+    print "we got this far"
+    values = [uid, uname, num1, num2, prog, one_attempt, multiple_attempts, not_completed]
+    months = [jan, feb, mar, apr, may, jun, jul, aug, sep, october, nov, dec]
     print values
+    print months
 
     devicestr = str(request.user_agent)
     devicetup = tuple(filter(None,devicestr.split(' ')))
@@ -222,28 +222,80 @@ def index():
     print login_inst
     print login_button
     print values
-    return render_template("index.html", values=values, login_inst=login_inst, login_button=login_button)
 
+    
+    return render_template("index.html", login_inst=login_inst, login_button=login_button, values=values, months=months)
 
+@app.route('/otherindex', methods=['GET', 'POST'])
+@login_required
+def otherindex():
+    print "in other index function"
+    uid = session['uid']
+    print uid
+    uid = int(uid)
+    [uid, uname] = match_uid_to_uname(uid)
+    print uid, uname
+    query_ophelia(uid, uname)
+    query_hamlet(uid, uname)
+    query_polonius(uid, uname)
+
+    [uid, uname, num1, num2] = lookup_days_active(uid)
+    [uname, prog] = determine_progress(uname)
+    [uid, one_attempt, multiple_attempts, not_completed] = problems(uid)
+    [uname, jan, feb, mar, apr, may, jun, jul, aug, sep, october, nov, dec] = dates_active(uname)
+    [uid, mon] = monthly_problems(uid)
+    uname = uname[1:]
+    print uid, uname, num1, num2, prog, one_attempt, multiple_attempts, not_completed
+    print "months!"
+    print jan, feb, mar, apr, may, jun, jul, aug, sep, october, nov, dec
+    print "we got this far"
+    values = [uid, uname, num1, num2, prog, one_attempt, multiple_attempts, not_completed]
+    months = [jan, feb, mar, apr, may, jun, jul, aug, sep, october, nov, dec]
+    print values
+    print months
+
+    devicestr = str(request.user_agent)
+    devicetup = tuple(filter(None,devicestr.split(' ')))
+    devicemessy = devicetup[1]
+    device = devicemessy[1:-1]
+
+    browserstr = str(request.user_agent)
+    browsertup = tuple(filter(None,devicestr.split(' ')))
+    browsermessy = browsertup[11]
+    browser = browsermessy[0:-14]
+
+    clicks = 0
+
+    userlogin = UserLogin(user_id = uid, username = uname, login_date = datetime.utcnow(), ip_address = str(request.remote_addr), device = device, browser = browser)
+    print "in user login"
+    print uid, uname, datetime.utcnow(), str(request.remote_addr), device, browser, clicks
+    db.session.add(userlogin)
+    db.session.commit()
+    buttonclicks = ButtonClicks(user_id = uid, username = uname, login_date = datetime.utcnow(), nforum_click = clicks)
+    print "in button clicks"
+    db.session.add(buttonclicks)
+    db.session.commit()
+
+    login_inst = UserLogin.query.filter_by(user_id=uid).first()
+    login_button = ButtonClicks.query.filter_by(user_id=uid).first()
+    print login_inst
+    print login_button
+    print values
+
+    
+    return render_template("otherindex.html", login_inst=login_inst, login_button=login_button, values=values, months=months)
+
+# forum click function
 @app.route('/forumclicks', methods=['GET', 'POST'])
 def forumclicks():
     print "in forum clicks"
 
-# this worked for index() but does not work here. why?
-
-    values = request.args.getlist('values')
-    uid = values[0]
-    print uid
     if request.method == 'POST': 
         print "hello"
         results = request.form.getlist('clicks')
         print 'hi'
         print type(results[0])
         print results[0]
-        print type(uname)
-        print uname
-
-# I know from here on down works fine if we can get the section above to work.
 
         buttonclicks = ButtonClicks.query.filter_by(username=results[0].decode('utf-8')).first()
         print buttonclicks
@@ -251,41 +303,33 @@ def forumclicks():
         db.session.commit()
         buttonclicks = ButtonClicks.query.filter_by(username=results[0].decode('utf-8')).first()
         print buttonclicks.nforum_click
-
     return redirect('https://piazza.com/', 301)
 
+# logout function
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
+    session['logged_in'] = False
     flash('You were logged out')
     return render_template("login.html")
 
 
-
+# admin login page
 @app.route('/adminlogin', methods=['GET', 'POST'])
 def adminlogin():
     print "Here in admin login"
     error = None
     if request.method == 'POST':
-        global uid
-        global uname
-        global num1
-        global num2
         uid = request.form['username']
         uid = int(uid)
-        [uid, uname] = match_uid_to_uname(uid)
-        print uid, uname
-        query_ophelia(uid,uname)
-        query_hamlet(uname)
-        if uid >= 534220 and uid <= 534964:
-            [uid, uname, num1, num2] = lookup_days_active(uid)
-            print uid, uname, num1, num2
+        if uid >= 534220 and uid <= 534964 and uid%2 == 0:
+            session['logged_in'] = True
             session['uid'] = uid
-            session['uname'] = uname
-            session['num1'] = num1
-            session['num2'] = num2
-            return redirect(url_for('index'))
-            return uid
+            return redirect(url_for('index', uid=uid))
+        elif uid >= 534220 and uid <= 534964 and uid%2 != 0:
+            session['logged_in'] = True
+            session['uid'] = uid
+            return redirect(url_for('otherindex', uid=uid))
         else:
             error = 'Invalid Credentials. Please try again.'
     return render_template("adminlogin.html", error=error)
