@@ -6,26 +6,18 @@
   <link href="/../static/css/circle.css" type="text/css" rel="stylesheet">
   <link href="/../static/css/style.css" type="text/css" rel="stylesheet">
 
+  <p>This is the admin page. To see the dashboard of a student, choose one from the menu to the right.</p>
+
   <div class="dropdown">
-          <button class="btn btn-secondary-outline dropdown-toggle" type="button" data-toggle="dropdown">Monthly Dashboard Data
+    <button class="btn btn-secondary-outline dropdown-toggle" type="button" data-toggle="dropdown">Pick a Student
           <span class="caret"></span></button>
             <ul class="dropdown-menu dropdown-menu-right">
-              <li><a href="#">Overview</a></li>
-              <div class="dropdown-divider"></div>
-              <li><a href="#">January</a></li>
-              <li><a href="#">February</a></li>
-              <li><a href="#">March</a></li>
-              <li><a href="#">April</a></li>
-              <li><a href="#">May</a></li>
-              <li><a href="#">June</a></li>
-              <li><a href="#">July</a></li>
-              <li><a href="#">August</a></li>
-              <li><a href="#">September</a></li>
-              <li><a href="#">October</a></li>
-              <li><a href="#">November</a></li>
-              <li><a href="#">December</a></li>           
+              <li><a href="/example1">Student A</a></li>
+              <li><a href="/example2">Student B</a></li>
+              <li><a href="/example3">Student C</a></li>
+              <li><a href="/example4">Student D</a></li>         
             </ul>
-      </div>
+  </div>
 
   <h2>MITx Course 8.02</h2>
   <h3>Welcome user <span style="color:#2980b9;">{{ values[1] }}</span> to your personalized dashboard.</h3>
@@ -57,9 +49,9 @@
           <p>Did you know that socialization among students enhances motivation and completion rates?</p>
         <br>
           <p>One way to interact with your fellow students is by posting to the course's forum page.</p>
-          <form action='/forumclicks' method="post" target="_blank">
+          <form action='https://piazza.com/' target="_blank">
             <center>
-              <input type="hidden" name="clicks" value="{{ values[1] }}">
+              <input type="hidden" name="clicks" value="Student A">
               <input class="btn btn-default" type="submit" value="Go to Forum">
             </center>
           </form>
@@ -191,7 +183,7 @@ var myBarChart = new Chart(ctxB, {
         datasets: [{
             label: 'Problems',
             data: [
-                  {{ values[4]+values[5] }},
+                  ({{ values[4] }}+{{ values[5] }}),
                   {{ values[6] }},
                   ],
             backgroundColor: [
@@ -222,7 +214,5 @@ var myBarChart = new Chart(ctxB, {
 </div>
 
 </div>
-
-
 
 {% endblock %}

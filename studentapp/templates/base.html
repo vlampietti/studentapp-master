@@ -23,16 +23,20 @@
                 <a class="navbar-brand">Student Dashboard</a>
 
             </div>
+            <p class="tpbutton btn-toolbar" style="text-align:right">
+              {% if session['logged_in'] == True %}
+                    <a class="btn navbar-btn btn-default pull-right" href="/logout">Log Out</a>
+              {% else %}
+                    <a class="btn navbar-btn btn-default pull-right" href="/login">Log In</a>
+              {% endif %}
+                    <a class="btn navbar-btn btn-primary pull-right" href="/admin">Admin View</a>
 
-            <form action="/logout">
-              <div class="navbar-item">
-                <input class="btn btn-default" type="submit" value="Log Out"></input>
-              </div>
-            </form>
+            </p>
+
 
           </div>
+          </div>
       </nav>
-        </div>
       </div>
       <div class="container">
         <div class="col-md-12">

@@ -3,13 +3,15 @@ from flask import Markup
 from flask import render_template, flash, redirect, session, url_for, request, g, json, jsonify, send_from_directory
 from studentapp import app, db
 from studentapp.models import UserLogin, ButtonClicks
-from lookup_functions import lookup_days_active, match_uid_to_uname, determine_progress, problems, dates_active, monthly_problems
+from lookup_functions import *
+from fakedata_queries import *
 import numpy as np
 import csv
 import json
 from datetime import datetime
 import webbrowser
 from functools import wraps
+import studentapp.controllers.login
 
 # GOOGLE_APPLICATION_CREDENTIALS = './my-first-project-00521592dba3.json'
 
@@ -40,12 +42,27 @@ def query_ophelia(uid, uname):
     query_job.begin()
     query_job.result()
 
+    print('exported {} and {}'.format(uid, uname))
+
     destination_table = query_job.destination
     destination_table.reload()
+    print destination_table
+    #db.session.add(destination_table)
+    #db.session.commit()
+
     f = open("ophelia.csv", "w+")
     for row in destination_table.fetch_data():
         f.write(str(row[0])+","+str(row[1])+","+str(row[2])+","+str(row[3])+","+str(row[4])+","+str(row[5])+"\n")
     f.close()
+
+
+    """
+    userlogin = UserLogin(user_id = uid, username = uname, login_date = datetime.utcnow(), ip_address = str(request.remote_addr), device = device, browser = browser)
+    print "in user login"
+    print uid, uname, datetime.utcnow(), str(request.remote_addr), device, browser, clicks
+    db.session.add(userlogin)
+    db.session.commit()
+    """
 
 def query_hamlet(uid, uname):
     import uuid
@@ -118,7 +135,7 @@ def query_polonius(uid, uname):
 # end of google bigquery queries
 
 # login form
-@app.route('/login', methods=['GET', 'POST'])
+"""@app.route('/login', methods=['GET', 'POST'])
 def login():
     print "here in login"
     error = None
@@ -141,6 +158,7 @@ def login():
         else:
             error = 'Invalid Credentials. Please try again.'
     return render_template("login.html", error=error)
+"""
 
 # error pages 
 @app.errorhandler(404)
@@ -152,8 +170,8 @@ def internal_error(error):
     db.session.rollback()
     return render_template('500.html'), 500
 
-# login required function
-def login_required(f):
+
+"""def login_required(f):
     @wraps(f)
     def wrap(*args, **kwargs):
         if session['logged_in'] == True:
@@ -162,16 +180,18 @@ def login_required(f):
         else:
             flash("You need to login first")
             return redirect(url_for('login'))
-    return wrap
+    return wrap"""
+
 
 
 # index function
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def index():
+    uid = '534592'
     print "in index function"
-    uid = session['uid']
+    session['uid'] = uid
     print uid
     uid = int(uid)
     [uid, uname] = match_uid_to_uname(uid)
@@ -180,17 +200,17 @@ def index():
     query_hamlet(uid, uname)
     query_polonius(uid, uname)
 
-    [uid, uname, num1, num2] = lookup_days_active(uid)
+    [uid, uname, num1] = lookup_days_active(uid)
     [uname, prog] = determine_progress(uname)
     [uid, one_attempt, multiple_attempts, not_completed] = problems(uid)
     [uname, jan, feb, mar, apr, may, jun, jul, aug, sep, october, nov, dec] = dates_active(uname)
     [uid, mon] = monthly_problems(uid)
     uname = uname[1:]
-    print uid, uname, num1, num2, prog, one_attempt, multiple_attempts, not_completed
+    print uid, uname, num1, prog, one_attempt, multiple_attempts, not_completed
     print "months!"
     print jan, feb, mar, apr, may, jun, jul, aug, sep, october, nov, dec
     print "we got this far"
-    values = [uid, uname, num1, num2, prog, one_attempt, multiple_attempts, not_completed]
+    values = [uid, uname, num1, prog, one_attempt, multiple_attempts, not_completed]
     months = [jan, feb, mar, apr, may, jun, jul, aug, sep, october, nov, dec]
     print values
     print months
@@ -227,7 +247,7 @@ def index():
     return render_template("index.html", login_inst=login_inst, login_button=login_button, values=values, months=months)
 
 @app.route('/otherindex', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def otherindex():
     print "in other index function"
     uid = session['uid']
@@ -285,6 +305,13 @@ def otherindex():
     
     return render_template("otherindex.html", login_inst=login_inst, login_button=login_button, values=values, months=months)
 
+
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/admin', methods=['GET', 'POST'])
+#@login_required
+def admin():
+    return render_template("admin.html")
+
 # forum click function
 @app.route('/forumclicks', methods=['GET', 'POST'])
 def forumclicks():
@@ -305,17 +332,138 @@ def forumclicks():
         print buttonclicks.nforum_click
     return redirect('https://piazza.com/', 301)
 
+@app.route('/example1', methods=['GET', 'POST'])
+def example1():
+    print "in example1"
+    uid = '534566'
+    session['uid'] = uid
+    print uid
+    uid = int(uid)
+    [uid, uname] = match_uid_to_uname(uid)
+    print uid, uname
+    query_romeo(uid, uname)
+    query_juliet(uid, uname)
+    query_mercutio(uid, uname)
+
+    [uid, uname, num1] = fake_lookup_days_active(uid)
+    [uname, prog] = fake_determine_progress(uname)
+    [uid, one_attempt, multiple_attempts, not_completed] = fake_problems(uid)
+    [uname, jan, feb, mar, apr, may, jun, jul, aug, sep, october, nov, dec] = fake_dates_active(uname)
+    [uid, mon] = fake_monthly_problems(uid)
+    uname = uname[1:]
+    print uid, uname, num1, prog, one_attempt, multiple_attempts, not_completed
+    print "months!"
+    print jan, feb, mar, apr, may, jun, jul, aug, sep, october, nov, dec
+    print "we got this far"
+    values = [uid, uname, num1, prog, one_attempt, multiple_attempts, not_completed]
+    months = [jan, feb, mar, apr, may, jun, jul, aug, sep, october, nov, dec]
+    print values
+    print months
+
+    return render_template("example.html", values=values, months=months)
+
+@app.route('/example2', methods=['GET', 'POST'])
+def example2():
+    print "in example2"
+    uid = '534580'
+    session['uid'] = uid
+    print uid
+    uid = int(uid)
+    [uid, uname] = match_uid_to_uname(uid)
+    print uid, uname
+    query_romeo(uid, uname)
+    query_juliet(uid, uname)
+    query_mercutio(uid, uname)
+
+    [uid, uname, num1] = fake_lookup_days_active(uid)
+    [uname, prog] = fake_determine_progress(uname)
+    [uid, one_attempt, multiple_attempts, not_completed] = fake_problems(uid)
+    [uname, jan, feb, mar, apr, may, jun, jul, aug, sep, october, nov, dec] = fake_dates_active(uname)
+    [uid, mon] = fake_monthly_problems(uid)
+    uname = uname[1:]
+    print uid, uname, num1, prog, one_attempt, multiple_attempts, not_completed
+    print "months!"
+    print jan, feb, mar, apr, may, jun, jul, aug, sep, october, nov, dec
+    print "we got this far"
+    values = [uid, uname, num1, prog, one_attempt, multiple_attempts, not_completed]
+    months = [jan, feb, mar, apr, may, jun, jul, aug, sep, october, nov, dec]
+    print values
+    print months
+
+    return render_template("example.html", values=values, months=months)
+
+@app.route('/example3', methods=['GET', 'POST'])
+def example3():
+    print "in example3"
+    uid = '534401'
+    session['uid'] = uid
+    print uid
+    uid = int(uid)
+    [uid, uname] = match_uid_to_uname(uid)
+    print uid, uname
+    query_romeo(uid, uname)
+    query_juliet(uid, uname)
+    query_mercutio(uid, uname)
+
+    [uid, uname, num1] = fake_lookup_days_active(uid)
+    [uname, prog] = fake_determine_progress(uname)
+    [uid, one_attempt, multiple_attempts, not_completed] = fake_problems(uid)
+    [uname, jan, feb, mar, apr, may, jun, jul, aug, sep, october, nov, dec] = fake_dates_active(uname)
+    [uid, mon] = fake_monthly_problems(uid)
+    uname = uname[1:]
+    print uid, uname, num1, prog, one_attempt, multiple_attempts, not_completed
+    print "months!"
+    print jan, feb, mar, apr, may, jun, jul, aug, sep, october, nov, dec
+    print "we got this far"
+    values = [uid, uname, num1, prog, one_attempt, multiple_attempts, not_completed]
+    months = [jan, feb, mar, apr, may, jun, jul, aug, sep, october, nov, dec]
+    print values
+    print months
+
+    return render_template("example.html", values=values, months=months)
+
+@app.route('/example4', methods=['GET', 'POST'])
+def example4():
+    print "in example4"
+    uid = '534508'
+    session['uid'] = uid
+    print uid
+    uid = int(uid)
+    [uid, uname] = match_uid_to_uname(uid)
+    print uid, uname
+    query_romeo(uid, uname)
+    query_juliet(uid, uname)
+    query_mercutio(uid, uname)
+
+    [uid, uname, num1] = fake_lookup_days_active(uid)
+    [uname, prog] = fake_determine_progress(uname)
+    [uid, one_attempt, multiple_attempts, not_completed] = fake_problems(uid)
+    [uname, jan, feb, mar, apr, may, jun, jul, aug, sep, october, nov, dec] = fake_dates_active(uname)
+    [uid, mon] = fake_monthly_problems(uid)
+    uname = uname[1:]
+    print uid, uname, num1, prog, one_attempt, multiple_attempts, not_completed
+    print "months!"
+    print jan, feb, mar, apr, may, jun, jul, aug, sep, october, nov, dec
+    print "we got this far"
+    values = [uid, uname, num1, prog, one_attempt, multiple_attempts, not_completed]
+    months = [jan, feb, mar, apr, may, jun, jul, aug, sep, october, nov, dec]
+    print values
+    print months
+
+    return render_template("example.html", values=values, months=months)
+
 # logout function
-@app.route('/logout')
+"""@app.route('/logout')
 def logout():
     session.pop('logged_in', None)
     session['logged_in'] = False
     flash('You were logged out')
     return render_template("login.html")
+"""
 
 
 # admin login page
-@app.route('/adminlogin', methods=['GET', 'POST'])
+"""@app.route('/adminlogin', methods=['GET', 'POST'])
 def adminlogin():
     print "Here in admin login"
     error = None
@@ -333,4 +481,4 @@ def adminlogin():
         else:
             error = 'Invalid Credentials. Please try again.'
     return render_template("adminlogin.html", error=error)
-
+"""

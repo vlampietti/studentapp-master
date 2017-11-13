@@ -1,0 +1,23 @@
+<!DOCTYPE HTML><html lang="en">
+{% extends "base.html" %}
+{% set active_page = "menu1" %}
+{% block content %}
+
+  <link href="/../static/css/circle.css" type="text/css" rel="stylesheet">
+  <link href="/../static/css/style.css" type="text/css" rel="stylesheet">
+
+  <p>This is the admin page. To see the dashboard of a student, choose one from the menu to the right.</p>
+
+  <div class="dropdown">
+    <button class="btn btn-secondary-outline dropdown-toggle" type="button" data-toggle="dropdown">Pick a Student
+          <span class="caret"></span></button>
+            <ul class="dropdown-menu dropdown-menu-right">
+              <li><a href="/example1">Student A</a></li>
+              <li><a href="/example2">Student B</a></li>
+              <li><a href="/example3">Student C</a></li>
+              <li><a href="/example4">Student D</a></li>         
+            </ul>
+  </div>
+
+
+{% endblock %}

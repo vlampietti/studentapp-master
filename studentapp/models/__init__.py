@@ -4,3 +4,4 @@ db = SQLAlchemy()
 
 from studentapp.models.userlogin import UserLogin
 from studentapp.models.buttonclicks import ButtonClicks
+from studentapp.models.user import User
