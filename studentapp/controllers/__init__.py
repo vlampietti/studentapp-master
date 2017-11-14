@@ -22,81 +22,153 @@ from functools import wraps
 # @login_required
 def index():
 
-    uid = '534500'
+    uid = '534584'
     print "in index function"
     session['uid'] = uid
     uid = int(uid)
     uname = "uname"
 
-    [uname, ndays_act] = query_ophelia(uid, uname)
-    uname = uname[1:]
-    [months, nproblems_attempted] = query_hamlet(uid, uname)
-    [one_attempt, multiple_attempts, not_completed] = query_polonius(uid, uname)
+    login_check = UserData.query.filter_by(user_id=uid).first()
+    print login_check
 
-    values = [uid, uname, ndays_act, nproblems_attempted, one_attempt, multiple_attempts, not_completed]
-    print values
-    print months
+    latest = "latest"
+    now = "now"
 
-    devicestr = str(request.user_agent)
-    devicetup = tuple(filter(None,devicestr.split(' ')))
-    devicemessy = devicetup[1]
-    device = devicemessy[1:-1]
+    if login_check != None:
+        latest = str(login_check.login_date)
+        latest = latest[0:10]
+        now = str(datetime.utcnow())
+        now = now[0:10]
+        print latest, now
 
-    browserstr = str(request.user_agent)
-    browsertup = tuple(filter(None,devicestr.split(' ')))
-    browsermessy = browsertup[11]
-    browser = browsermessy[0:-14]
+    if (login_check != None) and (latest == now):
+        print "Yes!!"
+        uname = login_check.username
+        ndays_act = login_check.ndays_act 
+        nproblems_attempted = login_check.nproblems_attempted 
+        one_attempt = login_check.one_attempt 
+        multiple_attempts = login_check.multiple_attempts
+        not_completed = login_check.not_completed
+        months = login_check.months
+        values = [uid, uname, ndays_act, nproblems_attempted, one_attempt, multiple_attempts, not_completed]
+        print values
+        print months
 
-    clicks = 0
 
-    userlogin = UserLogin(
-        user_id = uid, 
-        username = uname, 
-        login_date = datetime.utcnow(), 
-        ip_address = str(request.remote_addr), 
-        device = device, 
-        browser = browser)
+        devicestr = str(request.user_agent)
+        devicetup = tuple(filter(None,devicestr.split(' ')))
+        devicemessy = devicetup[1]
+        device = devicemessy[1:-1]
 
-    print "in user login"
-    print uid, uname, datetime.utcnow(), str(request.remote_addr), device, browser, clicks
-    db.session.add(userlogin)
-    db.session.commit()
+        browserstr = str(request.user_agent)
+        browsertup = tuple(filter(None,devicestr.split(' ')))
+        browsermessy = browsertup[11]
+        browser = browsermessy[0:-14]
 
-    userdata = UserData(
-        user_id = uid, 
-        username = uname, 
-        login_date = datetime.utcnow(), 
-        ndays_act = ndays_act, 
-        nproblems_attempted = nproblems_attempted, 
-        one_attempt = one_attempt, 
-        multiple_attempts = multiple_attempts, 
-        not_completed = not_completed,
-        months = str(months))
+        clicks = 0
 
-    print "in user data"
-    print uid, uname, datetime.utcnow(), ndays_act, nproblems_attempted, one_attempt, multiple_attempts, not_completed, months
-    db.session.add(userdata)
-    db.session.commit()
+        userlogin = UserLogin(
+            user_id = uid, 
+            username = uname, 
+            login_date = datetime.utcnow(), 
+            ip_address = str(request.remote_addr), 
+            device = device, 
+            browser = browser)
 
-    buttonclicks = ButtonClicks(
-        user_id = uid, 
-        username = uname, 
-        login_date = datetime.utcnow(), 
-        nforum_click = clicks)
+        print "in user login"
+        print uid, uname, datetime.utcnow(), str(request.remote_addr), device, browser, clicks
+        db.session.add(userlogin)
+        db.session.commit()
 
-    print "in button clicks"
-    db.session.add(buttonclicks)
-    db.session.commit()
+        buttonclicks = ButtonClicks(
+            user_id = uid, 
+            username = uname, 
+            login_date = datetime.utcnow(), 
+            nforum_click = clicks)
 
-    login_inst = UserLogin.query.filter_by(user_id=uid).first()
-    login_button = ButtonClicks.query.filter_by(user_id=uid).first()
-    login_data = UserData.query.filter_by(user_id=uid).first()
+        print "in button clicks"
+        db.session.add(buttonclicks)
+        db.session.commit()
 
-    print login_inst
-    print login_button
-    print login_data
+        login_inst = UserLogin.query.filter_by(user_id=uid).first()
+        login_button = ButtonClicks.query.filter_by(user_id=uid).first()
+
+        print login_inst
+        print login_button
+
+    else:
+        print "This is a new entry for today"
+
+
+        [uname, ndays_act] = query_ophelia(uid, uname)
+        uname = uname[1:]
+        [months, nproblems_attempted] = query_hamlet(uid, uname)
+        [one_attempt, multiple_attempts, not_completed] = query_polonius(uid, uname)
+
+        values = [uid, uname, ndays_act, nproblems_attempted, one_attempt, multiple_attempts, not_completed]
+        print values
+        print months
+
+        devicestr = str(request.user_agent)
+        devicetup = tuple(filter(None,devicestr.split(' ')))
+        devicemessy = devicetup[1]
+        device = devicemessy[1:-1]
+
+        browserstr = str(request.user_agent)
+        browsertup = tuple(filter(None,devicestr.split(' ')))
+        browsermessy = browsertup[11]
+        browser = browsermessy[0:-14]
+
+        clicks = 0
+
+        userlogin = UserLogin(
+            user_id = uid, 
+            username = uname, 
+            login_date = datetime.utcnow(), 
+            ip_address = str(request.remote_addr), 
+            device = device, 
+            browser = browser)
+
+        print "in user login"
+        print uid, uname, datetime.utcnow(), str(request.remote_addr), device, browser, clicks
+        db.session.add(userlogin)
+        db.session.commit()
+
+        userdata = UserData(
+            user_id = uid, 
+            username = uname, 
+            login_date = datetime.utcnow(), 
+            ndays_act = ndays_act, 
+            nproblems_attempted = nproblems_attempted, 
+            one_attempt = one_attempt, 
+            multiple_attempts = multiple_attempts, 
+            not_completed = not_completed,
+            months = str(months))
+
+        print "in user data"
+        print uid, uname, datetime.utcnow(), ndays_act, nproblems_attempted, one_attempt, multiple_attempts, not_completed, months
+        db.session.add(userdata)
+        db.session.commit()
+
+        buttonclicks = ButtonClicks(
+            user_id = uid, 
+            username = uname, 
+            login_date = datetime.utcnow(), 
+            nforum_click = clicks)
+
+        print "in button clicks"
+        db.session.add(buttonclicks)
+        db.session.commit()
+
+        login_inst = UserLogin.query.filter_by(user_id=uid).first()
+        login_button = ButtonClicks.query.filter_by(user_id=uid).first()
+        login_data = UserData.query.filter_by(user_id=uid).first()
+
+        print login_inst
+        print login_button
+        print login_data
     
-    return render_template("index.html", login_inst=login_inst, login_button=login_button, values=values, months=months)
+    return render_template("index.html", values=values, months=months)
 
 
 @app.route('/', methods=['GET', 'POST'])
