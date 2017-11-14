@@ -112,6 +112,35 @@ def login():
         return render_template('500.html', login_url=login_url)
 
 
+# og login form
+"""@app.route('/login', methods=['GET', 'POST'])
+def login():
+    print "here in login"
+    error = None
+    if request.method == 'POST':
+        uid = request.form['username']
+        if str(uid) == 'admin':
+            print uid
+            return redirect(url_for('adminlogin'))
+
+        uid = int(uid)
+
+        if uid >= 534220 and uid <= 534964 and uid%2 == 0:
+            session['logged_in'] = True
+            session['uid'] = uid
+            return redirect(url_for('index', uid=uid))
+        elif uid >= 534220 and uid <= 534964 and uid%2 != 0:
+            session['logged_in'] = True
+            session['uid'] = uid
+            return redirect(url_for('otherindex', uid=uid))
+        else:
+            error = 'Invalid Credentials. Please try again.'
+    return render_template("login.html", error=error)
+"""
+
+
+
+
 def login_required(f):
     @wraps(f)
     def wrap(*args, **kwargs):
@@ -122,6 +151,7 @@ def login_required(f):
             flash("You need to login first")
             return redirect(url_for('login'))
     return wrap
+
 
 @app.route('/logout')
 def logout():

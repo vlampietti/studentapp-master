@@ -9,6 +9,7 @@ class UserLogin(db.Model):
 	ip_address = db.Column(db.String(64))
 	device = db.Column(db.String(64))
 	browser = db.Column(db.String(64))
+	
 
 def __init__(self, user_id, username, login_date, ip_address, device, browser):
 	self.user_id = user_id
