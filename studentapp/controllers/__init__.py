@@ -29,7 +29,6 @@ def index():
     uname = "uname"
 
     login_check = UserData.query.filter_by(user_id=uid).first()
-    print login_check
 
     latest = "latest"
     now = "now"
@@ -39,10 +38,8 @@ def index():
         latest = latest[0:10]
         now = str(datetime.utcnow())
         now = now[0:10]
-        print latest, now
 
     if (login_check != None) and (latest == now):
-        print "Yes!!"
         uname = login_check.username
         ndays_act = login_check.ndays_act 
         nproblems_attempted = login_check.nproblems_attempted 
@@ -51,9 +48,6 @@ def index():
         not_completed = login_check.not_completed
         months = login_check.months
         values = [uid, uname, ndays_act, nproblems_attempted, one_attempt, multiple_attempts, not_completed]
-        print values
-        print months
-
 
         devicestr = str(request.user_agent)
         devicetup = tuple(filter(None,devicestr.split(' ')))
@@ -75,8 +69,6 @@ def index():
             device = device, 
             browser = browser)
 
-        print "in user login"
-        print uid, uname, datetime.utcnow(), str(request.remote_addr), device, browser, clicks
         db.session.add(userlogin)
         db.session.commit()
 
@@ -86,19 +78,13 @@ def index():
             login_date = datetime.utcnow(), 
             nforum_click = clicks)
 
-        print "in button clicks"
         db.session.add(buttonclicks)
         db.session.commit()
 
         login_inst = UserLogin.query.filter_by(user_id=uid).first()
         login_button = ButtonClicks.query.filter_by(user_id=uid).first()
 
-        print login_inst
-        print login_button
-
     else:
-        print "This is a new entry for today"
-
 
         [uname, ndays_act] = query_ophelia(uid, uname)
         uname = uname[1:]
@@ -106,8 +92,6 @@ def index():
         [one_attempt, multiple_attempts, not_completed] = query_polonius(uid, uname)
 
         values = [uid, uname, ndays_act, nproblems_attempted, one_attempt, multiple_attempts, not_completed]
-        print values
-        print months
 
         devicestr = str(request.user_agent)
         devicetup = tuple(filter(None,devicestr.split(' ')))
@@ -129,8 +113,6 @@ def index():
             device = device, 
             browser = browser)
 
-        print "in user login"
-        print uid, uname, datetime.utcnow(), str(request.remote_addr), device, browser, clicks
         db.session.add(userlogin)
         db.session.commit()
 
@@ -145,8 +127,6 @@ def index():
             not_completed = not_completed,
             months = str(months))
 
-        print "in user data"
-        print uid, uname, datetime.utcnow(), ndays_act, nproblems_attempted, one_attempt, multiple_attempts, not_completed, months
         db.session.add(userdata)
         db.session.commit()
 
@@ -156,17 +136,12 @@ def index():
             login_date = datetime.utcnow(), 
             nforum_click = clicks)
 
-        print "in button clicks"
         db.session.add(buttonclicks)
         db.session.commit()
 
         login_inst = UserLogin.query.filter_by(user_id=uid).first()
         login_button = ButtonClicks.query.filter_by(user_id=uid).first()
         login_data = UserData.query.filter_by(user_id=uid).first()
-
-        print login_inst
-        print login_button
-        print login_data
     
     return render_template("index.html", values=values, months=months)
 
@@ -183,20 +158,14 @@ def forumclicks():
     print "in forum clicks"
 
     if request.method == 'POST': 
-        print "hello"
         results = request.form.getlist('clicks')
-        print 'hi'
-        print type(results[0])
-        print results[0]
 
         buttonclicks = ButtonClicks.query.filter_by(username=results[0].decode('utf-8')).first()
-        print buttonclicks
         buttonclicks.nforum_click += 1
         db.session.commit()
         buttonclicks = ButtonClicks.query.filter_by(username=results[0].decode('utf-8')).first()
         print buttonclicks.nforum_click
     return redirect('https://piazza.com/', 301)
-
 
 @app.errorhandler(404)
 def not_found_error(error):
