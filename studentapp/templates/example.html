@@ -6,21 +6,25 @@
   <link href="/../static/css/circle.css" type="text/css" rel="stylesheet">
   <link href="/../static/css/style.css" type="text/css" rel="stylesheet">
 
-  <p>This is the admin page. To see the dashboard of a student, choose one from the menu to the right.</p>
+  <p>This is the admin page. To see the dashboard of a student, enter their student ID in the box on the right.</p>
 
-  <div class="dropdown">
-    <button class="btn btn-secondary-outline dropdown-toggle" type="button" data-toggle="dropdown">Pick a Student
-          <span class="caret"></span></button>
-            <ul class="dropdown-menu dropdown-menu-right">
-              <li><a href="/example1">Student A</a></li>
-              <li><a href="/example2">Student B</a></li>
-              <li><a href="/example3">Student C</a></li>
-              <li><a href="/example4">Student D</a></li>
-              <li><a href="/example5">Student E</a></li>          
-            </ul>
-  </div>
+  <title>Search</title>
+    <div class="pull-right">
+      <div class="container">
+        <form action="/admin" method="post" class="pull-right">
+          <input type="text" placeholder="Student ID" name="username" value="{{request.form.username }}">
+          <input class="btn btn-default" type="submit" value="Submit">
+        </form>
 
-  <h2>MITx Course 8.02</h2>
+        {% if error %}
+
+        <p class="error"><strong>Error:</strong> {{ error }}
+       
+        {% endif %}
+      </div>
+    </div>
+
+  <h2 style='color:#34495e;'>MITx Course 8.02</h2>
   <h3>Welcome user <span style="color:#2980b9;">{{ values[1] }}</span> to your personalized dashboard.</h3>
   
     <p>You have been active for </span><b>{{ values[2] }}</b> days. Keep up the good work!</p>
@@ -30,32 +34,88 @@
 
     <div class="col-xs-6 col-sm-4">
       <h4>Your Progress</h4>
-        <br>
-      <div class="c100 p{{ values[3] }} bar">
-        <span>{{ values[3] }}%</span>
+
+        <canvas id="lineChart" width="350"></canvas>
+    <script>
+  var ctxL = document.getElementById("lineChart").getContext('2d');
+var myLineChart = new Chart(ctxL, {
+    type: 'line',
+    data: {
+        labels: [' ',' ',' ',' ',' ',' ','Today'],
+        datasets: [
+            {
+                label: "Past 7 Days",
+                fillColor: "rgba(52,73,94,0.4)",
+                strokeColor: "rgba(52,73,94,1)",
+                pointColor: "rgba(52,73,94,1)",
+                pointStrokeColor: "#fff",
+                pointHighlightFill: "#fff",
+                pointHighlightStroke: "rgba(52,73,94,1)",
+                data: [1,2,0,0,3,2,1]
+            },
+            {
+                label: "Entire Course",
+                fillColor: "rgba(151,187,205,0.2)",
+                strokeColor: "rgba(151,187,205,1)",
+                pointColor: "rgba(151,187,205,1)",
+                pointStrokeColor: "#fff",
+                pointHighlightFill: "#fff",
+                pointHighlightStroke: "rgba(151,187,205,1)",
+                data: [0,2,3,1,2,3,2]
+            }
+        ]
+    },
+    options: {
+        responsive: false
+    }    
+});
+    </script>
+
+    <br>
+
+      <div class="c100 p{{ values[7] }} bar">
+        <span>{{ values[7] }}%</span>
         <div class="slice"></div>
         <div class="bar"></div>
         <div class="fill"></div>
       </div>
 
-      <p>Your progress is determined by the number of problems you have completed successfully over the total number of problems in the course.</p>
+      <small><p>Your progress is determined by the number of problems you have completed successfully over the total number of problems in the course.</p></small>
 
     </div>
 
 
     <div class="col-xs-6 col-sm-4">
-       <h4>Learning Science Tip</h4>
-       <br>
- 
-          <p>Did you know that socialization among students enhances motivation and completion rates?</p>
-        <br>
-          <p>One way to interact with your fellow students is by posting to the course's forum page.</p>
-          <form action='https://piazza.com/' target="_blank">
+
+       <h4>Your Badges</h4>
+
+
+      <table style="width:100%">
+        <tr>
+          <td><img src="../static/images/3X.png" alt="3 Day Streak" width="110"></td>
+          <td><img src="../static/images/4X.png" alt="4 Day Streak" width="110"></td>
+          <td><img src="../static/images/10X.png" alt="10 Day Streak" width="110"></td>
+        </tr>
+        <tr>
+          <td>Won 5 times</td>
+          <td>Won 2 times</td>
+          <td>Won 0 times</td>
+        </tr>
+      </table>
+
+      <br>
+      <br>
+
+      <p>Did you know that socialization among students enhances motivation and completion rates?</p>
+
+      <p>One way to interact with your fellow students is by posting to the course's forum page.</p>
+          <form action='/forumclicks' method="post" target="_blank">
             <center>
-              <input type="hidden" name="clicks" value="Student A">
+              <input type="hidden" name="clicks" value="{{ values[1] }}">
               <input class="btn btn-default" type="submit" value="Go to Forum">
             </center>
           </form>
+ 
     </div>
 
   <!-- Add the extra clearfix for only the required viewport -->
@@ -76,26 +136,24 @@
     }
     </style>
 
-    <center><canvas id="doughnutChart" width="200" height="200"></canvas></center>
+    <center><canvas id="doughnutChart" width="150" height="150"></canvas></center>
         <script>
           var ctxD = document.getElementById("doughnutChart").getContext('2d');
 var myLineChart = new Chart(ctxD, {
     type: 'doughnut',
     data: {
         labels: [
-                "One Attempt",
-                "Multiple Attempts",
-                "Unattempted",
+                "Complete",
+                "Incomplete",
                 ],
         datasets: [
             {
                 data: [
-                    {{ values[4] }},
-                    {{ values[5] }},
+                    {{ values[4]+values[5] }},
                     {{ values[6] }},
                 ],
-                backgroundColor: ["#949FB1", "#46BFBD", "#FDB45C"],
-                hoverBackgroundColor: ["#A8B3C5", "#5AD3D1", "#FFC870"]
+                backgroundColor: ["#34495e","#cccccc"],
+                hoverBackgroundColor: ["#34495e","#cccccc"]
             }
         ]
     },
@@ -106,94 +164,29 @@ var myLineChart = new Chart(ctxD, {
             }
           }
 });
+
         </script>
 
-  </div>
-</div>
-
-
-  <script
-    src="https://code.jquery.com/jquery-3.2.1.min.js"
-    integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-    crossorigin="anonymous"></script> 
-
-
-</div>
-
-
-<div class="container">
-  <div class="row">
-
-  <div class="col-xs-6 col-sm-4">
-      
-  <canvas id="lineChart" width="350"></canvas>
-    <script>
-  var ctxL = document.getElementById("lineChart").getContext('2d');
-var myLineChart = new Chart(ctxL, {
-    type: 'line',
-    data: {
-        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-        datasets: [
-            {
-                label: "Days Active",
-                fillColor: "#7986CB",
-                strokeColor: "#7986CB",
-                pointColor: "#7986CB",
-                pointStrokeColor: "#fff",
-                pointHighlightFill: "#fff",
-                pointHighlightStroke: "#7986CB",
-                data: {{ months }}
-            }
-        ]
-    },
-    options: {
-        responsive: false
-    }    
-});
-    </script>
-  </div>
-
-
-    <div class="col-xs-6 col-sm-4">
-      
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-      <br>
-   
-   <p><a href="https://openlearning.mit.edu/campus/resources-and-references" target="_blank" style="color:#16a085;">Click here</a> for resources on how to study smarter!</p>
-
-    </div>
-
-  <!-- Add the extra clearfix for only the required viewport -->
-    <div class="clearfix visible-xs-block"></div>
-
-    <div class="col-xs-6 col-sm-4">
-
-<canvas id="barChart"></canvas>
+  <canvas id="barChart"></canvas>
         <script>
           var ctxB = document.getElementById("barChart").getContext('2d');
 var myBarChart = new Chart(ctxB, {
     type: 'bar',
     data: {
-        labels: ["Attempted", "Unattempted"],
+        labels: ['One','Two','None'],
         datasets: [{
-            label: 'Problems',
+            label: 'Attempts',
             data: [
-                  ({{ values[4] }}+{{ values[5] }}),
+                  {{ values[4] }},
+                  {{ values[5] }},
                   {{ values[6] }},
                   ],
             backgroundColor: [
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(255, 159, 64, 0.2)'
+                'rgba(52, 73, 94, 0.5)',
+                'rgba(52, 73, 94, 0.9)',
+                'rgba(52, 73, 94, 0.1)'
             ],
-            borderColor: [
-                'rgba(75, 192, 192, 1)',
-                'rgba(255, 159, 64, 1)'
-            ],
+            borderColor: ['#34495e','#34495e','#34495e'],
             borderWidth: 1
         }]
     },
@@ -209,10 +202,61 @@ var myBarChart = new Chart(ctxB, {
 });
       </script>
 
-    </div>
+  </div>
+</div>
+
+
+  <script
+    src="https://code.jquery.com/jquery-3.2.1.min.js"
+    integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+    crossorigin="anonymous"></script> 
 
 </div>
 
-</div>
+
+<div class="container">
+  <div class="row">
+
+  <div class="col-xs-6 col-sm-4">
+      
+  <canvas id="lineChart" width="350"></canvas>
+    <script>
+  var ctxL = document.getElementById("lineChart").getContext('2d');
+var myLineChart = new Chart(ctxL, {
+    type: 'line',
+    data: {
+        labels: ['S','M','T','W','Th','F','S'],
+        datasets: [
+            {
+                label: "This Week",
+                fillColor: "rgba(52,73,94,0.4)",
+                strokeColor: "rgba(52,73,94,1)",
+                pointColor: "rgba(52,73,94,1)",
+                pointStrokeColor: "#fff",
+                pointHighlightFill: "#fff",
+                pointHighlightStroke: "rgba(52,73,94,1)",
+                data: [2,0,1,3]
+            },
+            {
+                label: "Entire Course",
+                fillColor: "rgba(151,187,205,0.2)",
+                strokeColor: "rgba(151,187,205,1)",
+                pointColor: "rgba(151,187,205,1)",
+                pointStrokeColor: "#fff",
+                pointHighlightFill: "#fff",
+                pointHighlightStroke: "rgba(151,187,205,1)",
+                data: [1,2,3,1,2,0,1]
+            }
+        ]
+    },
+    options: {
+        responsive: false
+    }    
+});
+    </script>
+  </div>
+
+
+
 
 {% endblock %}

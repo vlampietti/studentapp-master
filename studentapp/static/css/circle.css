@@ -104,7 +104,7 @@
 .c100.p99 .fill,
 .c100.p100 .fill {
   position: absolute;
-  border: 0.08em solid #307bbb;
+  border: 0.08em solid #34495e;
   width: 0.84em;
   height: 0.84em;
   clip: rect(0em, 0.5em, 1em, 0em);
@@ -242,7 +242,7 @@
 .c100.center {
   float: none;
   margin: 0 auto;
-  color: #46BFBD;
+  color: #34495e;
 }
 .c100.big {
   font-size: 240px;
@@ -1012,7 +1012,7 @@
   width: 3.33em;
   line-height: 3.33em;
   font-size: 0.3em;
-  color: #FFC107;
+  color: #34495e;
 }
 .c100:hover:after {
   top: 0.04em;

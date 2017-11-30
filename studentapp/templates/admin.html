@@ -6,19 +6,22 @@
   <link href="/../static/css/circle.css" type="text/css" rel="stylesheet">
   <link href="/../static/css/style.css" type="text/css" rel="stylesheet">
 
-  <p>This is the admin page. To see the dashboard of a student, choose one from the menu to the right.</p>
+  <p>This is the admin page. To see the dashboard of a student, enter their student ID in the box on the right.</p>
 
-  <div class="dropdown">
-    <button class="btn btn-secondary-outline dropdown-toggle" type="button" data-toggle="dropdown">Pick a Student
-          <span class="caret"></span></button>
-            <ul class="dropdown-menu dropdown-menu-right">
-              <li><a href="/example1">Student A</a></li>
-              <li><a href="/example2">Student B</a></li>
-              <li><a href="/example3">Student C</a></li>
-              <li><a href="/example4">Student D</a></li>
-              <li><a href="/example5">Student E</a></li>          
-            </ul>
-  </div>
+    <title>Search</title>
+    <div class="pull-right">
+      <div class="container">
+        <form action="" method="post" class="pull-right">
+          <input type="text" placeholder="Student ID" name="username" value="{{request.form.username }}">
+          <input class="btn btn-default" type="submit" value="Submit">
+        </form>
 
+        {% if error %}
+
+        <p class="error"><strong>Error:</strong> {{ error }}
+       
+        {% endif %}
+      </div>
+    </div>
 
 {% endblock %}
