@@ -5,8 +5,8 @@ from studentapp import app, db
 from sqlalchemy import desc
 from studentapp.models import UserLogin, UserData, ButtonClicks
 from studentapp.controllers import login, admin
-from fake_queries import *
 from queries import *
+from streak import *
 import numpy as np
 import csv
 import json
@@ -23,9 +23,9 @@ from functools import wraps
 # @login_required
 def index():
 
-    uid = '534540'
-    print "in index function"
+    uid = '534554'
     session['uid'] = uid
+    print "in index function for user", uid
     uid = int(uid)
     uname = "uname"
 
@@ -36,12 +36,15 @@ def index():
     not_completed = login_data.not_completed
     one_attempt = login_data.one_attempt
     multiple_attempts = login_data.multiple_attempts
-    daily_activity = login_data.daily_activity
 
     percent_complete = float(one_attempt+multiple_attempts)
     total_complete = float(one_attempt+multiple_attempts+not_completed)
-    final = float((percent_complete/total_complete)*100)
-    final_int = int(final)
+
+    if int(total_complete) != 0:
+        final = float((percent_complete/total_complete)*100)
+        final_int = int(final)
+    else:
+        final_int = 0
 
     values = [uid, uname, ndays_act, completed, not_completed, one_attempt, multiple_attempts, final_int]
 
@@ -54,7 +57,6 @@ def index():
     browsertup = tuple(filter(None,devicestr.split(' ')))
     browsermessy = browsertup[11]
     browser = browsermessy[0:-13]
-    print browser
 
     clicks = 0
 
@@ -81,7 +83,15 @@ def index():
     login_inst = UserLogin.query.filter_by(user_id=uid).first()
     login_button = ButtonClicks.query.filter_by(user_id=uid).first()
 
-    return render_template("index.html", values=values)
+    [month_act, week_act, three_five_seven, longest, current] = streak(uid)
+
+    return render_template("index.html", 
+        values=values, 
+        month_act=month_act, 
+        week_act=week_act,
+        three_five_seven=three_five_seven,
+        longest=longest,
+        current=current)
 
 
 @app.route('/forumclicks', methods=['GET', 'POST'])
