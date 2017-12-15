@@ -3,6 +3,25 @@ from studentapp.models import *
 import studentapp.config as config
 import studentapp.constants as constants
 from studentapp.models.user import *
+
+from oic import rndstr
+from oic.utils.http_util import Redirect 
+from oic.oic import Client
+from oic.utils.authn.client import CLIENT_AUTHN_METHOD
+import requests
+from requests.auth import HTTPBasicAuth
+import json
+import datetime
+from functools import wraps
+
+from flask import redirect, render_template, request, url_for, session, g
+
+
+from studentapp import app
+from studentapp.models import *
+import studentapp.config as config
+import studentapp.constants as constants
+from studentapp.models.user import *
 from studentapp.utils import *
 
 from oic import rndstr
@@ -18,7 +37,6 @@ from functools import wraps
 from flask import redirect, render_template, request, url_for, session
 
 @app.route('/login', methods=['GET', 'POST'])
-#@login_required
 def login():
     # Compute redirect url
     print "here in login"
@@ -27,26 +45,40 @@ def login():
     if 'redirect' in request.args:
         redirect_url = config.DOMAIN+'/login?redirect=' + request.args['redirect']
     else:
+        print "else"
         redirect_url = config.DOMAIN+'/login'
 
+
     # Check if already logged in
+    if 'jwt' in request.cookies:
+        try:
+            id = decode_token(request.cookies['jwt'])
+            user = User.query.filter_by(id=id).first()
+            return redirect('/')
+        except Exception as e:
+            pass
 
     client = Client(client_authn_method=CLIENT_AUTHN_METHOD)
     print client
     error = ""
 
     try:
+        print "inside this block"
         if "code" in request.args and "state" in request.args and request.args["state"] == session["state"]:
+            print "we have something for code and state"
             r = requests.post('https://oidc.mit.edu/token', auth=HTTPBasicAuth(CLIENT_ID, CLIENT_SECRET),
                                data={"grant_type": "authorization_code",
                                      "code": request.args["code"],
                                      "redirect_uri": redirect_url})
             auth_token = json.loads(r.text)["access_token"]
+            expiration = json.loads(r.text)["expires_in"]
+            print auth_token, expiration
             r = requests.get('https://oidc.mit.edu/userinfo', headers={"Authorization": "Bearer " + auth_token})
             user_info = json.loads(r.text)
             print user_info
             if "email" in user_info and user_info["email_verified"] == True and user_info["email"].endswith("@mit.edu"):
                 # Authenticated
+                print "authenticated user!"
                 email = user_info["email"]
                 name = user_info["name"]
                 session["logged_in"] = True
@@ -68,9 +100,8 @@ def login():
                 if 'redirect' in request.args:
                     response = app.make_response(redirect(request.args['redirect']))
 
-                # not sure I understand how cookies work
 
-                response.set_cookie('jwt', token, expires=datetime.datetime.now()+datetime.timedelta(days=90))
+                response.set_cookie('jwt', token, expires=datetime.datetime.now()+datetime.timedelta(seconds=1))
                 return response
             else:
                 if not "email" in user_info:
@@ -95,11 +126,14 @@ def login():
         login_url = auth_req.request('https://oidc.mit.edu/authorize')
 
         if error == "":
+            print "no error!"
             return redirect(login_url)
+
         else:
             return render_template('500.html', login_url=login_url)
 
     except Exception as e:
+        print "in exception block"
         session["state"] = rndstr()
         session["nonce"] = rndstr()
 
@@ -118,30 +152,19 @@ def login():
         return redirect(url_for('index'))
 
 
-def login_required(f):
-    @wraps(f)
-    def wrap(*args, **kwargs):
-        if session['logged_in'] == True:
-            return f(*args, **kwargs)
-            return redirect(url_for('index'))
-        else:
-            flash("You need to login first")
-            return redirect(url_for('login'))
-    return wrap
-
 
 @app.route('/logout')
 def logout():
     print "we are now logging out..."
     session.pop('logged_in', None)
-    session['logged_in'] = False
-    logged_in = session['logged_in']
-    print "you are logged in: ", logged_in
+    session.clear()
 
-    response = app.make_response(redirect('/'))
-    response.set_cookie('jwt', '')
-    print response
+    response = app.make_response(redirect('/index'))
+    response.set_cookie('jwt',expires=datetime.datetime.now()+datetime.timedelta(seconds=1))
     return response
+
+    #return render_template('logout.html')
+    return redirect(url_for('index'))
 
 
 

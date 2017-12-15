@@ -1,11 +1,10 @@
 from flask import Flask
 from flask import Markup
 from flask import render_template, flash, redirect, session, url_for, request, g, json, jsonify, send_from_directory
-from studentapp import app, db
+from studentapp import app, db, utils
 from sqlalchemy import desc
 from studentapp.models import UserLogin, UserData, ButtonClicks
 from studentapp.controllers import login, admin
-from queries import *
 from streak import *
 import numpy as np
 import csv
@@ -17,13 +16,28 @@ from functools import wraps
 
 # GOOGLE_APPLICATION_CREDENTIALS = './my-first-project-00521592dba3.json'
 
+def login_required(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        print "in login_required"
+        if session.get('logged_in') is not None:
+            print "session variable:", session['logged_in']
+            if session['logged_in'] == True:
+                return f(*args, **kwargs)
+                return redirect(url_for('index'))
+        else:
+            print "lol back to login"
+            return redirect(url_for('login'))
+    return wrap
+
+
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
-# @login_required
+@login_required
 def index():
 
-    uid = '534554'
+    uid = '534953'
     session['uid'] = uid
     print "in index function for user", uid
     uid = int(uid)
@@ -83,12 +97,15 @@ def index():
     login_inst = UserLogin.query.filter_by(user_id=uid).first()
     login_button = ButtonClicks.query.filter_by(user_id=uid).first()
 
-    [month_act, week_act, three_five_seven, longest, current] = streak(uid)
+    [month_act, week_act, data_points, three_five_seven, longest, current] = streak(uid)
+
+    print "made it to here"
 
     return render_template("index.html", 
         values=values, 
         month_act=month_act, 
         week_act=week_act,
+        data_points=data_points,
         three_five_seven=three_five_seven,
         longest=longest,
         current=current)

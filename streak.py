@@ -11,7 +11,17 @@ def streak(uid):
 	print "in streak function for user", uid
 	user_data = UserActivity.query.filter_by(user_id=uid).order_by(UserActivity.id.desc()).first()
 	daily_activity = user_data.daily_activity
+	overall_activity = user_data.overall_activity
 
+	for y in overall_activity:
+		y.encode('UTF8')
+
+	overall_activity = overall_activity[1:]
+	overall_activity = overall_activity[:-1]
+
+	overall_activity = overall_activity.split(", ")
+
+	data_points = [overall_activity[0],overall_activity[1],overall_activity[2]]
 
 	for x in daily_activity:
 		x.encode('UTF8')
@@ -154,8 +164,6 @@ def streak(uid):
 									if y >= 10:
 										tenstreak+=1
 
-	print threestreak, fourstreak, fivestreak, sixstreak, sevenstreak, eightstreak, ninestreak, tenstreak
-
 	three_five_seven = [threestreak, fivestreak, sevenstreak]
 
 	# longest streak
@@ -187,7 +195,6 @@ def streak(uid):
 			this_week_new.append(x)
 
 	this_week = this_week_new
-
 
 	week_act = []
 
@@ -226,6 +233,7 @@ def streak(uid):
 	saturday_act = 0
 	sunday_act = 0
 
+
 	for x in monday:
 		monday_act+=x[1]
 	monday_act = float(monday_act)/float(len(monday))
@@ -261,11 +269,9 @@ def streak(uid):
 	sunday_act = float(sunday_act)/float(len(sunday))
 	sunday_act = float(format(sunday_act, '.2f'))
 
-
-
 	month_act = [monday_act, tuesday_act, wednesday_act, thursday_act, friday_act, saturday_act, sunday_act]
-	
+
 	new_month_act = []
 
-	return month_act, week_act, three_five_seven, longest, current
+	return month_act, week_act, data_points, three_five_seven, longest, current
 

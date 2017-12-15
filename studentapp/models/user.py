@@ -1,5 +1,4 @@
 from studentapp.models import db
-from sqlalchemy.orm.exc import NoResultFound
 from datetime import datetime
 
 class User(db.Model):

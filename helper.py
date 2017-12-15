@@ -80,6 +80,10 @@ with open("csv/person_course.csv","rb") as file:
 			todays_date = str(datetime.datetime.utcnow())
 			todays_date = todays_date[0:10]
 
+			video_time = 0
+			problem_time = 0
+			text_time = 0
+
 			for u in og_list:
 				video_time = 0
 				problem_time = 0
@@ -95,6 +99,22 @@ with open("csv/person_course.csv","rb") as file:
 				glom = video_time + problem_time + text_time + 1
 				glom_by_date = [dt, glom]
 				binary_list.append(glom_by_date)
+
+			videos = 0
+			problems = 0
+			readings = 0
+			activity_ints = []
+
+			for x in og_list:
+				if x[2] != 'None':
+					videos += 1
+				if x[3] != 'None':
+					problems += 1
+				if x[4] != 'None':
+					readings += 1
+
+			activity_ints = [videos, problems, readings]
+			print activity_ints
 
 			if (UserData.query.filter_by(user_id=uid).first()) != None:
 
@@ -117,8 +137,10 @@ with open("csv/person_course.csv","rb") as file:
 
 				user_act.query_date = todays_date
 				user_act.daily_activity = str(binary_list)
+				user_act.overall_activity = str(activity_ints)
 
 				print user_act.daily_activity
+				print user_act.overall_activity
 
 				print "another successful one"
 
@@ -127,9 +149,7 @@ with open("csv/person_course.csv","rb") as file:
 				db.session.commit()
 
 				print UserData.query.filter_by(user_id=uid).order_by(UserData.id.desc()).all()
-				user_act = UserActivity.query.filter_by(user_id=uid).order_by(UserActivity.id.desc()).all()
-
-				print user_act
+				print UserActivity.query.filter_by(user_id=uid).order_by(UserActivity.id.desc()).all()
 
 			else:
 				print "this is a new case!"
@@ -151,7 +171,8 @@ with open("csv/person_course.csv","rb") as file:
 					user_id = uid,
 					username = uname,
 					query_date = todays_date,
-					daily_activity = str(binary_list))
+					daily_activity = str(binary_list),
+					overall_activity = str(activity_ints))
 
 				db.session.add(useractivity)
 				db.session.commit()
@@ -163,8 +184,10 @@ with open("csv/person_course.csv","rb") as file:
 
 				user_act = UserActivity.query.filter_by(user_id=uid).order_by(UserActivity.id.desc()).first()
 				print user_act.daily_activity
+				print user_act.overall_activity
 
 				# this is temporary
+			"""
 
 			user_data = UserActivity.query.filter_by(user_id=uid).order_by(UserActivity.id.desc()).first()
 			daily_activity = user_data.daily_activity
@@ -208,7 +231,7 @@ with open("csv/person_course.csv","rb") as file:
 						if x == y:
 							daily_list.remove(x)
 
-				print "this far"
+				print "got this far"
 
 
 				first_date = daily_list[0]
@@ -300,12 +323,27 @@ with open("csv/person_course.csv","rb") as file:
 				eightstreak=0
 				ninestreak=0
 				tenstreak=0
+				elevenstreak=0
+				twelvestreak=0
+				thirteenstreak=0
+				fourteenstreak=0
+				fifteenstreak=0
 
 				streak_list = []
 
 
 				for y in allstreaks:
-					if y >= 10:
+					if y >= 15:
+						fifteenstreak+=1
+					elif y >= 14:
+						fourteenstreak+=1
+					elif y >= 13:
+						thirteenstreak+=1
+					elif y >= 12:
+						twelvestreak+=1
+					elif y >= 11:
+						elevenstreak+=1
+					elif y >= 10:
 						tenstreak+=1
 					elif y >= 9:
 						ninestreak+=1
@@ -324,18 +362,21 @@ with open("csv/person_course.csv","rb") as file:
 					elif y >= 2:
 						twostreak+=1
 
-				streak_list = [twostreak, threestreak, fourstreak, fivestreak, sixstreak, sevenstreak, eightstreak, ninestreak, tenstreak]
+				streak_list = [twostreak, threestreak, fourstreak, fivestreak, sixstreak, sevenstreak, eightstreak, ninestreak, tenstreak, elevenstreak, twelvestreak, thirteenstreak, fourteenstreak, fifteenstreak]
 
 			else:
-				streak_list = [0,0,0,0,0,0,0,0,0]
+				streak_list = [0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 				print "this is your streak", streak_list
 
 			with open("csv/streak_data.csv","a") as f:
-				f.write(str(streak_list[0])+","+str(streak_list[1])+","+str(streak_list[2])+","+str(streak_list[3])+","+str(streak_list[4])+","+str(streak_list[5])+","+str(streak_list[6])+","+str(streak_list[7])+","+str(streak_list[8])+"\n")
+				f.write(str(streak_list[0])+","+str(streak_list[1])+","+str(streak_list[2])+","+str(streak_list[3])+","+str(streak_list[4])+","+str(streak_list[5])+","+str(streak_list[6])+","+str(streak_list[7])+","+str(streak_list[8])+","+str(streak_list[9])+","+str(streak_list[10])+","+str(streak_list[11])+","+str(streak_list[12])+","+str(streak_list[13])+"\n")
 
+
+		"""
 
         	
         print "done looping through all users!"
+
 
     	# os.remove("csv/person_course.csv")
     	# os.remove("csv/person_problem.csv")
